@@ -93,7 +93,13 @@ if (update) {
 }
 
 if (!update) {
-  path_last<-stringr::str_replace(path, today, today-1)
-  neon_weather_df<-read_csv(paste0(path_last,"NEON_weather.csv"))
-  write_csv(neon_weather_df,paste0(path,"NEON_weather.csv"))
+  if(!file.exists(paste0(path,"NEON_weather.csv"))) {
+    path_last<-stringr::str_replace(path, today, today-1)
+    neon_weather_df<-read_csv(paste0(path_last,"NEON_weather.csv"))
+    write_csv(neon_weather_df,paste0(path,"NEON_weather.csv"))
+  } else {
+    neon_weather_df<-read_csv(paste0(path,"NEON_weather.csv"))
+  }
+  
+  
 }

@@ -141,26 +141,26 @@ for(j in 1:length(var_list)) {
   }
 }
 
-# whittaker smoothing
-for(j in 1:length(var_list)) {
-  for (i in 1:nrow(coord_df)) {
-    max_id<-0
-    done<-F
-    while(!done) {
-      min_id<-min(which(!is.na(Sigma[i,(max_id+1):length(date_list),j])))+(max_id)
-      if (min_id==Inf) {
-        done<-T
-      } else {
-        max_id<-min(which(is.na(Sigma[i,min_id:length(date_list),j])))-1+(min_id-1)
-        if (max_id==Inf) {
-          max_id<-length(date_list)
-          done<-T
-        }
-        Sigma[i,min_id:max_id,j]<-ptw::whit1(Sigma[i,min_id:max_id,j],5) #gcc
-      }
-    }
-  }
-}
+# # whittaker smoothing
+# for(j in 1:length(var_list)) {
+#   for (i in 1:nrow(coord_df)) {
+#     max_id<-0
+#     done<-F
+#     while(!done) {
+#       min_id<-min(which(!is.na(Sigma[i,(max_id+1):length(date_list),j])))+(max_id)
+#       if (min_id==Inf) {
+#         done<-T
+#       } else {
+#         max_id<-min(which(is.na(Sigma[i,min_id:length(date_list),j])))-1+(min_id-1)
+#         if (max_id==Inf) {
+#           max_id<-length(date_list)
+#           done<-T
+#         }
+#         Sigma[i,min_id:max_id,j]<-ptw::whit1(Sigma[i,min_id:max_id,j],5) #gcc
+#       }
+#     }
+#   }
+# }
 
 #### visualize time series
 df_list<-vector(mode="list", length(var_list))

@@ -47,7 +47,7 @@ for(site in 1:nrow(coord_df)) {
         
         if (sum(is.na(newX))>0) {
           x[site,(forecast_start+t),1]<-NA
-          Sigma[,(forecast_start+t),1]<-NA
+          Sigma[site,(forecast_start+t),1]<-NA
         } else {
           Y_forecast_all<-
             foreach (i=1:num_part,
@@ -56,7 +56,7 @@ for(site in 1:nrow(coord_df)) {
                        "distMat",
                        "GPSDM"
                      ),
-                     .packages = c("tidyverse","RhpcBLASctl"),
+                     .packages = c("tidyverse","RhpcBLASctl","MASS"),
                      .combine = rbind
             ) %dopar% {
               blas_set_num_threads(1)
@@ -69,7 +69,7 @@ for(site in 1:nrow(coord_df)) {
               c(res$mt, res$Ct)
             }
           x[site,(forecast_start+t),1]<-weighted.mean(Y_forecast_all[,1], w=exp(log_p-mean(log_p)))
-          Sigma[,(forecast_start+t),1]<-weighted.mean(Y_forecast_all[,2], w=exp(log_p-mean(log_p)))+Hmisc::wtd.var(Y_forecast_all[,1],weights=exp(log_p-mean(log_p)))
+          Sigma[site,(forecast_start+t),1]<-weighted.mean(Y_forecast_all[,2], w=exp(log_p-mean(log_p)))+Hmisc::wtd.var(Y_forecast_all[,1],weights=exp(log_p-mean(log_p)), normwt = T)
         }
         
         print(paste0(site,",",t))

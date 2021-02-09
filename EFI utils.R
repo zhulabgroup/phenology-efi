@@ -300,33 +300,39 @@ GPSDM<-function (pars, distMat,basisX, basisP, basisY=NULL, newX=NULL,newSigma=N
   }
   
   if (mode=="predict") {
-    # Winv<-diag(as.numeric(phi), nrow=ndim, ncol=ndim)
-    # Sigma_x<-diag(as.numeric(newSigma), nrow=ndim, ncol=ndim)
+    # invalid_dim<-which(phi<=1e-50)
+    Winv<-diag(as.numeric(phi), nrow=ndim, ncol=ndim)
+    Sigma_x<-diag(as.numeric(newSigma), nrow=ndim, ncol=ndim)
+    
+    Deltainv<-diag(diag(Winv)-1/(1/(diag(Winv))+diag(Sigma_x)),nrow=ndim, ncol=ndim)
     # Deltainv<-Winv-ginv(ginv(Winv)+Sigma_x)
-    # lC0<-0
-    # DDD2<-vector(mode="list")
-    # for (i in 1:ndim) {
-    #   DDD2[[i]]<-abs(Xt[,i, drop=FALSE]%*%matrix(1, nrow=1,ncol=nrow(X))-matrix(1, nrow=nrow(Xt),ncol=1)%*%t(X[,i, drop=FALSE]))^2
-    #   lC0<-lC0+0.5*Deltainv[i,i]*DDD2[[i]]
-    # }
-    # coef<-det(Winv%*%Sigma_x+diag(1, nrow=ndim, ncol=ndim))^(-1/2)
-    # Corr<-coef*exp(lC0)
-    # 
-    # Lambdainv<-2*Winv-ginv(ginv(W)/2+Sigma_x)
-    # X_mu<-matrix(1, nrow=nrow(X), ncol=1)%*%colMeans(X)
-    # lC0<-0
-    # DDD2<-vector(mode="list")
-    # for (i in 1:ndim) {
-    #   DDD2[[i]]<-abs(Xt[,i, drop=FALSE]%*%matrix(1, nrow=1,ncol=nrow(X_mu))-matrix(1, nrow=nrow(Xt),ncol=1)%*%t(X_mu[,i, drop=FALSE]))^2
-    #   lC0<-lC0+0.5*Lambdainv[i,i]*DDD2[[i]]
-    # }
-    # coef<-det(2*Winv%*%Sigma_x+diag(1, nrow=ndim, ncol=ndim))^(-1/2)
-    # Corr2<-coef*exp(lC0)
-    # 
-    # mt_ep<-(kXtX*Corr)%*%m #3.39
-    # Ct_ep<-kXtXt-(kXtX*Corr2)%*%(Cinv-m%*%t(m))%*%kXXt-mt_ep%*%t(mt_ep)+ve*Id
-    # output<-list(mt=matrix(mt_ep),Ct=matrix(diag(Ct_ep)))
-    output<-list(mt=matrix(mt),Ct=matrix(diag(Ct)))
+    # Deltainv[invalid_dim,invalid_dim]<-0
+    lC0<-0
+    DDD2<-vector(mode="list")
+    for (i in 1:ndim) {
+      DDD2[[i]]<-abs(Xt[,i, drop=FALSE]%*%matrix(1, nrow=1,ncol=nrow(X))-matrix(1, nrow=nrow(Xt),ncol=1)%*%t(X[,i, drop=FALSE]))^2
+      lC0<-lC0+0.5*Deltainv[i,i]*DDD2[[i]]
+    }
+    coef<-det(Winv%*%Sigma_x+diag(1, nrow=ndim, ncol=ndim))^(-1/2)
+    Corr<-coef*exp(lC0)
+
+    Lambdainv<-diag(2*diag(Winv)-1/(1/diag(Winv)/2+diag(Sigma_x)),nrow=ndim, ncol=ndim)
+    # Lambdainv<-2*Winv-ginv(ginv(Winv)/2+Sigma_x)
+    # Lambdainv[invalid_dim,invalid_dim]<-0
+    X_mu<-matrix(1, nrow=nrow(X), ncol=1)%*%colMeans(X)
+    lC0<-0
+    DDD2<-vector(mode="list")
+    for (i in 1:ndim) {
+      DDD2[[i]]<-abs(Xt[,i, drop=FALSE]%*%matrix(1, nrow=1,ncol=nrow(X_mu))-matrix(1, nrow=nrow(Xt),ncol=1)%*%t(X_mu[,i, drop=FALSE]))^2
+      lC0<-lC0+0.5*Lambdainv[i,i]*DDD2[[i]]
+    }
+    coef<-det(2*Winv%*%Sigma_x+diag(1, nrow=ndim, ncol=ndim))^(-1/2)
+    Corr2<-coef*exp(lC0)
+
+    mt_ep<-(kXtX*Corr)%*%m #3.39
+    Ct_ep<-kXtXt-(kXtX*Corr2)%*%(Cinv-m%*%t(m))%*%kXXt-(mt_ep)%*%t(mt_ep)+ve*diag(1, nrow=nrow(Xt), ncol=nrow(Xt))
+    output<-list(mt=matrix(mt_ep),Ct=matrix(diag(Ct_ep)))
+    # output<-list(mt=matrix(mt),Ct=matrix(diag(Ct)))
     return(output)
   }
   
