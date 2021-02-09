@@ -2,6 +2,7 @@ library(tidyverse)
 library(phenocamapi)
 library(LaplacesDemon)
 library(doSNOW)
+library(EML)
 
 # https://eurekastatistics.com/calculating-a-distance-matrix-for-geographic-points-using-r/
 ReplaceLowerOrUpperTriangle <- function(m, triangle.to.replace){

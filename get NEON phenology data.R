@@ -64,13 +64,14 @@ ts_all<-read_csv(paste0(path,"phenology-targets.csv")) %>%
   filter(time<today)
 
 if (update) {
-  cairo_pdf(paste0(path,"phenology-targets.pdf"))
-  ggplot(ts_all)+
+  p<-ggplot(ts_all)+
     geom_line(aes(x=time, y=gcc_90, col=siteID))+
     geom_ribbon(aes(x=time, ymin=gcc_90-1.96*gcc_sd, ymax=gcc_90+1.96*gcc_sd, fill=siteID), alpha=0.5)+
     theme_classic()+
     facet_wrap(~siteID)+
     guides(col=F, fill=F)
+  cairo_pdf(paste0(path,"phenology-targets.pdf"))
+  print(p)
   dev.off()
 }
 

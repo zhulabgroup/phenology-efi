@@ -1,39 +1,28 @@
-today<-as.Date("2021-02-02")
+today_list<-seq(as.Date("2021-02-01"),as.Date("2021-02-09"),by=1)
+for (d in 1:length(today_list)) {
+  today<-today_list[d]
+  
+  forecast_project_id<-"UCSC_P_EDM" 
+  forecast_model_id   <- "v0.1"
+  forecast_iteration_id<- uuid::UUIDgenerate() 
+  
+  source("EFI utils.R")
+  source("EFI settings.R")
+  
+  update<-F
+  source("get NEON phenology data.R")
+  update<-F
+  source("get NEON weather data.R")
+  update<-F
+  source("get NOAA weather data.R")
+  
+  source("preprocess data.R")
+  source("prepare embeddings.R")
+  source("train GP model.R")
+  source("fill previous gaps.R")
+  source("forecast.R")
+  source("output for submission.R")
+}
 
-source("EFI utils.R")
-source("EFI settings.R")
 
-update<-T
-source("get NEON phenology data.R")
-update<-F
-source("get NEON weather data.R")
-update<-T
-source("get NOAA weather data.R")
-
-source("preprocess data.R")
-source("prepare embeddings.R")
-source("train GP model.R")
-source("fill previous gaps.R")
-source("check forecast.R")
-
-cairo_pdf(paste0(path,"phenology-",year,"-",month,"-",day,"-UCSC_P_EDM.pdf"), width = 16, height = 8)
-site_view<-forecast_df_ori %>% 
-  group_by(site) %>% 
-  dplyr::summarize(view=sum(!is.na(value))) %>% 
-  filter(view!=0) %>% 
-  dplyr::select(site) %>%
-  unlist()
-# site_view<-which(rowSums(!is.na(Y_forecast_all[[1]]))!=0)
-site_label<-unique(ts_all$siteID) %>% unlist()
-names(site_label)<-1:length(site_label)
-ggplot()+
-  geom_line(data=obs_df_ori  %>% filter(site%in%site_view), aes(x=date, y=y))+
-  geom_ribbon(data=obs_df_ori%>% filter(site%in%site_view), aes(x=date, ymax=upper, ymin=lower), alpha=0.25)+
-  geom_line(data=forecast_df_ori %>% filter(site%in%site_view), aes(x=date, y=value), col="blue")+
-  geom_ribbon(data=forecast_df_ori%>% filter(site%in%site_view), aes(x=date, ymax=upper, ymin=lower), fill="blue", alpha=0.25)+
-  geom_vline(xintercept = date_list[forecast_start+1], col="blue", alpha=0.5)+
-  ylab("GCC")+
-  facet_wrap(~site, ncol = 2,labeller = labeller(site=site_label))+
-  theme_classic()
-dev.off()
 

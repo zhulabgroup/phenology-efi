@@ -1,53 +1,52 @@
-library(tidyverse)
 source("utilities/downloadNOAAFiles.R")
 source("utilities/noaa_gefs_read.R")
 coord_df<-read_csv(paste0(path,"coord.csv"))
 site_list <- coord_df$siteID %>% unlist()
 
 if(update) {
-cycle="00"
-base_dir <- stringr::str_replace(path,as.character(today),"noaa/NOAAGEFS_1hr/")
-dir.create(base_dir, recursive = T)
-
-all_date_list<-seq(as.Date("2020-09-25"),today,by=1)
-if (length(list.files(base_dir))==0) {
-  download_date_list<-all_date_list
-} else {
-  downloaded_date_list<-list.files(paste0(base_dir,"BART"))
-  download_date_list<-as.Date(setdiff(as.character(all_date_list),downloaded_date_list))
-}
-
-for(k in 1:nrow(coord_df)){
-  for(j in 1:length(download_date_list)){
-    try(download_noaa_files_s3(siteID = coord_df$siteID[k],
-                               date = download_date_list[j],
-                               cycle = cycle,
-                               local_directory =getwd() ))
+  cycle="00"
+  base_dir <- stringr::str_replace(path,as.character(today),"noaa/NOAAGEFS_1hr/")
+  dir.create(base_dir, recursive = T)
+  
+  all_date_list<-seq(as.Date("2020-09-25"),today,by=1)
+  if (length(list.files(base_dir))==0) {
+    download_date_list<-all_date_list
+  } else {
+    downloaded_date_list<-list.files(paste0(base_dir,"BART"))
+    download_date_list<-as.Date(setdiff(as.character(all_date_list),downloaded_date_list))
   }
-}
 
-weather_list<-vector(mode="list")
-for (i in 1:length(all_date_list)){
-  try(weather_list[[i]]<-noaa_gefs_read(base_dir, all_date_list[i], cycle, site_list) %>% 
-        dplyr::select(siteID, time, 
-                      temp=air_temperature,
-                      humi=relative_humidity,
-                      prcp=precipitation_flux) %>%
-        mutate(temp=temp-273.15) %>% #how to transform humidity?
-        mutate(prcp=prcp*60*60/30) %>% 
-        mutate(date=as.Date(time)) %>% 
-        dplyr::select(-time) %>% 
-        group_by(siteID, date) %>% 
-        summarize(tmax=max(temp),
-                  tmin=min(temp),
-                  tmean=mean(temp),
-                  humi=mean(humi),
-                  prcp=sum(prcp)) %>% 
-        mutate(forecast_date=all_date_list[i]) %>% 
-        ungroup()
-  )
-  print(all_date_list[i])
-}
+  for(k in 1:nrow(coord_df)){
+    for(j in 1:length(download_date_list)){
+      try(download_noaa_files_s3(siteID = coord_df$siteID[k],
+                                 date = download_date_list[j],
+                                 cycle = cycle,
+                                 local_directory =getwd() ))
+    }
+  }
+  
+  weather_list<-vector(mode="list")
+  for (i in 1:length(all_date_list)){
+    try(weather_list[[i]]<-noaa_gefs_read(base_dir, all_date_list[i], cycle, site_list) %>% 
+          dplyr::select(siteID, time, 
+                        temp=air_temperature,
+                        humi=relative_humidity,
+                        prcp=precipitation_flux) %>%
+          mutate(temp=temp-273.15) %>% #how to transform humidity?
+          mutate(prcp=prcp*60*60/30) %>% 
+          mutate(date=as.Date(time)) %>% 
+          dplyr::select(-time) %>% 
+          group_by(siteID, date) %>% 
+          summarize(tmax=max(temp),
+                    tmin=min(temp),
+                    tmean=mean(temp),
+                    humi=mean(humi),
+                    prcp=sum(prcp)) %>% 
+          mutate(forecast_date=all_date_list[i]) %>% 
+          ungroup()
+    )
+    print(all_date_list[i])
+  }
 
   noaa_weather_df<-data.table::rbindlist(weather_list) %>% 
     group_by(siteID, date) %>% 
@@ -91,7 +90,7 @@ for (i in 1:length(all_date_list)){
     ylab("precipitation (mm)")
   
   cairo_pdf(paste0(path,"weather.pdf"))
-  gridExtra::grid.arrange(p3,p4,ncol=1)
+  print(gridExtra::grid.arrange(p3,p4,ncol=1))
   dev.off()
   
   write_csv(weather_df,paste0(path,"weather.csv"))

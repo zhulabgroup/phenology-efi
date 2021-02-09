@@ -30,7 +30,7 @@ for (i in 1:length(vars)) {
     lags[[i]] <- 1:1
   } # for doy
   if (var_list[vars[i]]  =="gcc") {
-    lags[[i]] <- list(1,2,3,4,5)
+    lags[[i]] <- list()#list(1,2,3,4,5)
     for (period in 1:23) {
       lags[[i]] <-rlist::list.append(lags[[i]] ,(period-1)*16+1:16)
     }

@@ -16,11 +16,12 @@ for (moy_oi in 1:12) {
 today_id<-which (date_list==today)
 for(site in 1:nrow(coord_df)) {
   all_filled=F
+  start_search<-1115
   while(!all_filled) {
     na_id<-which(is.na(x[site,,1])) 
     # date_list[forecast_start]
-    if (length(na_id[which(na_id>=1115&na_id<today_id)])>0) {
-      forecast_start<-min(na_id[which(na_id>=1115&na_id<today_id)])-1
+    if (length(na_id[which(na_id>=start_search&na_id<today_id)])>0) {
+      forecast_start<-min(na_id[which(na_id>=start_search&na_id<today_id)])-1
       steps=length(date_list)-forecast_start
       D_forecast <- date_list[(forecast_start + 1):(forecast_start + steps)] %>% 
         as.character() %>% 
@@ -80,6 +81,7 @@ for(site in 1:nrow(coord_df)) {
         } else {
           filled<-!is.na(x[site,(forecast_start+t),1])
           all_filled<-sum(is.na(x[site,(forecast_start+t):(today_id-1),1]))==0 
+          start_search<-forecast_start+t
         }
       }
     } else {
