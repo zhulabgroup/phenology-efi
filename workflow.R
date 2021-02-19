@@ -1,4 +1,4 @@
-today_list<-seq(as.Date("2021-02-01"),as.Date("2021-02-09"),by=1)
+today_list<-seq(as.Date("2021-02-12"),as.Date("2021-02-18"),by=1)
 for (d in 1:length(today_list)) {
   today<-today_list[d]
   
@@ -9,11 +9,11 @@ for (d in 1:length(today_list)) {
   source("EFI utils.R")
   source("EFI settings.R")
   
-  update<-F
+  update<-T
   source("get NEON phenology data.R")
   update<-F
   source("get NEON weather data.R")
-  update<-F
+  update<-T
   source("get NOAA weather data.R")
   
   source("preprocess data.R")

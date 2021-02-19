@@ -5,7 +5,7 @@ site_list <- coord_df$siteID %>% unlist()
 
 if(update) {
   cycle="00"
-  base_dir <- stringr::str_replace(path,as.character(today),"noaa/NOAAGEFS_1hr/")
+  base_dir <- paste0(getwd(),"/noaa/NOAAGEFS_1hr/")
   dir.create(base_dir, recursive = T)
   
   all_date_list<-seq(as.Date("2020-09-25"),today,by=1)

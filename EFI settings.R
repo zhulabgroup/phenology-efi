@@ -1,4 +1,4 @@
-path<-paste0(today,"/")
+path<-paste0("archive/",today,"/")
 dir.create(path)
 
 cl <- makeCluster(20, outfile = "")

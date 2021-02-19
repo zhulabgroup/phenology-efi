@@ -6,7 +6,7 @@ df_submit<-forecast_df_ori %>%
   dplyr::select(time, siteID,
                 mean=gcc_90,
                 sd=gcc_sd) %>% 
-  gather(key="statistic",value="gcc",-siteID,-time) %>% 
+  gather(key="statistic",value="gcc_90",-siteID,-time) %>% 
   mutate(obs_flag=2,
          forecast=1,
          data_assimilation=1) %>% 
@@ -16,7 +16,7 @@ df_submit<-forecast_df_ori %>%
                 forecast,
                 data_assimilation,
                 statistic,
-                gcc) %>% 
+                gcc_90) %>% 
   arrange(time,siteID)
 df_submit
 
@@ -43,7 +43,8 @@ p<-ggplot()+
   geom_line(data=forecast_df_ori %>% filter(site%in%site_view), aes(x=date, y=value), col="blue")+
   geom_ribbon(data=forecast_df_ori%>% filter(site%in%site_view), aes(x=date, ymax=upper, ymin=lower), fill="blue", alpha=0.25)+
   geom_vline(xintercept = date_list[forecast_start+1], col="blue", alpha=0.5)+
-  ylab("GCC")+
+  geom_vline(xintercept = date_list[forecast_start+1-365], col="blue", alpha=0.5)+
+  ylab("GCC_90")+
   facet_wrap(~site, ncol = 2,labeller = labeller(site=site_label))+
   theme_classic()
 
@@ -62,7 +63,7 @@ attributes <- tibble::tribble(
   "forecast",          "[flag]{whether time step assimilated data}", "dimensionless",         NA,           "integer",    NA,
   "data_assimilation", "[flag]{whether time step assimilated data}", "dimensionless",         NA,           "integer",    NA,
   "statistic",     "[dimension]{descriptive statistic}",        "dimensionless",         NA,           "character",    NA,
-  "gcc",         "[variable]{Green Chromatic Coordinate}",      "dimensionless", NA,           "real",       NA
+  "gcc_90",         "[variable]{Green Chromatic Coordinate}",      "dimensionless", NA,           "real",       NA
 ) 
 factors1<-data.frame(attributeName="siteID",
                      code=site_list,

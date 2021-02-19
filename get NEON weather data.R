@@ -4,9 +4,9 @@
 library(neonUtilities)
 library(tidyverse)
 
-base_path<-stringr::str_replace(path,as.character(today),"")
+base_path<-getwd()
 if (update) {
-  dir.create(paste0(base_path,"NEON weather"))
+  dir.create(paste0(base_path,"/NEON weather"))
   coord_df<-read_csv(paste0(path,"coord.csv"))
   site_list <- coord_df$siteID %>% unlist()
   
@@ -27,7 +27,7 @@ if (update) {
               tmax=max(tempTripleMean),
               tmean=mean(tempTripleMean)) %>% 
     drop_na()
-  write_csv(temp_df,paste0(base_path,"NEON weather/NEON_temp.csv"))
+  write_csv(temp_df,paste0(base_path,"/NEON weather/NEON_temp.csv"))
   
   ###
   rel.hum <- loadByProduct(dpID="DP1.00098.001", 
@@ -45,7 +45,7 @@ if (update) {
     summarize(humi=mean(RHMean)) %>% 
     mutate(humi=humi/100) %>% 
     drop_na()
-  write_csv(humi_df,paste0(base_path,"NEON weather/NEON_humi.csv"))
+  write_csv(humi_df,paste0(base_path,"/NEON weather/NEON_humi.csv"))
   
   
   
@@ -83,7 +83,7 @@ if (update) {
     slice(1) %>% 
     ungroup()
   
-  write_csv(prcp_df,paste0(base_path,"NEON weather/NEON_prcp.csv"))
+  write_csv(prcp_df,paste0(base_path,"/NEON weather/NEON_prcp.csv"))
   
   neon_weather_df<-temp_df %>% 
     full_join(humi_df, by=c("siteID", "date")) %>% 
@@ -94,12 +94,10 @@ if (update) {
 
 if (!update) {
   if(!file.exists(paste0(path,"NEON_weather.csv"))) {
-    path_last<-stringr::str_replace(path, today, today-1)
+    path_last<-stringr::str_replace(path, as.character(today), as.character(today-1))
     neon_weather_df<-read_csv(paste0(path_last,"NEON_weather.csv"))
     write_csv(neon_weather_df,paste0(path,"NEON_weather.csv"))
   } else {
     neon_weather_df<-read_csv(paste0(path,"NEON_weather.csv"))
   }
-  
-  
 }
