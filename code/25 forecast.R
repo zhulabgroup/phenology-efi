@@ -1,9 +1,9 @@
 P_fit<-P_forecast<-as.matrix(1:nrow(coord_df))
 
-forecast_start<-length(date_list)-365*2#max(unlist(lags))+1
+forecast_start<-which(date_list==today)-1#length(date_list)-365*2#max(unlist(lags))+1
 date_list[forecast_start]
 
-steps=length(date_list)-forecast_start
+steps=35#length(date_list)-forecast_start
 D_forecast <- date_list[(forecast_start + 1):(forecast_start + steps)] %>% 
   as.character() %>% 
   as.matrix()
@@ -73,7 +73,9 @@ for (t in 1:steps) {
   }
   res<-PrepareEmbedding(Sigmanew,start=forecast_start+t,end=forecast_start+t, focalsites = P_forecast, lags=lags, neighbors=neighbors,vars=vars, distMat = distMat)
   newSigma<-res$X
-  newSigma<-newSigma[-missing_id,,drop=F]
+  if (length(missing_id)>0) {
+    newSigma<-newSigma[-missing_id,,drop=F]
+  }
   
   Y_forecast_all<-
     foreach (i=1:num_part,

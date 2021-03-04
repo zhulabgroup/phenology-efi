@@ -38,8 +38,9 @@ if (basisnumber==nrow(X_all)) {
   P_basis <- P_all
   D_basis <- D_all
 } else {
+  J_all<-date2doy(D_all)
   set.seed(42)
-  cluster <- kmeans(cbind(P_all,X_all), basisnumber )
+  cluster <- kmeans(cbind(P_all,X_all,J_all), basisnumber )
   cluster_id_sort <- seq(basisnumber )[order(cluster$size, decreasing = T)]
   basis_id <- rep(NA, basisnumber)
   for (i in 1:basisnumber) {
@@ -186,7 +187,7 @@ pars_id_add <- ((epoch - 1) * num_part + 1):(epoch * num_part)
 
 Rprop_res_add <-
   foreach(
-    i = 1:20,
+    i = 1:num_part,
     # .export = ls(globalenv()),
     .export = c(
       "phimax", "phimin", "vemax", "vemin", "taumax", "taumin", "gammamax", "gammamin",
@@ -212,7 +213,7 @@ Rprop_res_add <-
     }
     print("start")
     
-    fmingrad_Rprop(lpost, pars_add[, i, drop = F] + matrix(rnorm(ndim + 4, 0, 0.1)), sample_n = min(nrow(X_train),100), maxcount = 200)
+    fmingrad_Rprop(lpost, pars_add[, i, drop = F] + matrix(rnorm(ndim + 4, 0, 0.1)), sample_n = min(nrow(X_train),50), maxcount = 200)
   }
 
 pars_add_updated <- matrix(NA, nrow = ndim + 4, ncol = num_part)

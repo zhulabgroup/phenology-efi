@@ -36,9 +36,9 @@ for (i in 1:length(vars)) {
     }
   }
   else {
-    lags[[i]] <- list(1,2,3,4,5)
-    for (period in 1:4) {
-      lags[[i]] <-rlist::list.append(lags[[i]] ,(period-1)*16+1:16)
+    lags[[i]] <- list()#list(1,2,3,4,5)
+    for (period in 1:8) {
+      lags[[i]] <-rlist::list.append(lags[[i]] ,(period-1)*8+1:8)
     }
   }
 }
@@ -80,7 +80,7 @@ vemin <- 0.0001
 vemax <- 0.99
 taumin <- .01
 taumax <- 4.99
-gammamin <- .0001 # exp(-d^2*gamma) gamma smaller -> u more similar over space
+gammamin <- 0.01 # exp(-d^2*gamma) gamma smaller -> u more similar over space
 gammamax <- 1
 rhomin <- .0001 
 rhomax <- 1
@@ -101,8 +101,8 @@ priors <- list(
   V_ve = 1,
   E_tau = 0,
   V_tau = 1,
-  E_gamma = 0,
-  V_gamma = 5,
+  E_gamma = 0.01,
+  V_gamma = 100,
   E_rho = 0.5,
   V_rho = 5
 )

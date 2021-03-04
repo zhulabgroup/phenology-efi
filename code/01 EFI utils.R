@@ -204,7 +204,7 @@ fmingrad_Rprop<-function (fun, xinit, sample_n, maxcount) {
     f<-fnew
     count<-count+1
     if (count%%10==0) {seed<-seed+1}
-    print (paste0(count,", ",seed))
+    # print (paste0(count,", ",seed, ", ",x[nrow(x),]))
   }
   
   res<-fun(x, sample_n,seed)
@@ -257,6 +257,7 @@ GPSDM<-function (pars, distMat,basisX, basisP,basisD, basisY=NULL, newX=NULL,new
   # gamma<-(gammamax-gammamin)/(1+exp(-pars[ndim+3]))+gammamin
   rho<-(rhomax-rhomin)/(1+exp(-pars[ndim+3]))+rhomin
   gamma2<-(gammamax-gammamin)/(1+exp(-pars[ndim+4]))+gammamin
+  # gamma2<-0.001
   
   if (!is.null(Cinv.fixed)&!is.null(m.fixed) & mode!="optimize" ) { #must recalculate when optimizing
     Cinv<-Cinv.fixed

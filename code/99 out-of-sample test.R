@@ -1,9 +1,9 @@
 update<-F
-source("get NEON phenology data.R")
-source("get NEON weather data.R")
-source("get NOAA weather data.R")
+source("code/11 get NEON phenology data.R")
+source("code/12 get NEON weather data api.R")
+source("code/13 get NOAA weather data.R")
 
-source("preprocess data.R")
+source("code/21 preprocess data.R")
 
 ###
 dir.create(paste0(path,"train_out"))
@@ -558,7 +558,9 @@ for (t in 1:steps) {
   }
   res<-PrepareEmbedding(Sigmanew,start=forecast_start+t,end=forecast_start+t, focalsites = P_forecast, lags=lags, neighbors=neighbors,vars=vars, distMat = distMat)
   newSigma<-res$X
-  newSigma<-newSigma[-missing_id,,drop=F]
+  if (length(missing_id)>0) {
+    newSigma<-newSigma[-missing_id,,drop=F]
+  }
   
   Y_forecast_all<-
     foreach (i=1:num_part,

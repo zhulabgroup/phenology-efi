@@ -7,3 +7,8 @@ v1.1 changes
 * remove gcc data with sd > 0.0001
 * better workflow to update data by checking new data and appending to old data
 * code available for out-of-sample test
+
+v1.1 changes
+* remove daily lags of weather data
+* change size of moving window from 16 to 8 days for weather data
+* change number of moving window from 4 to 8 for weather data
