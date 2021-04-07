@@ -1,6 +1,11 @@
 # EFI
 
-v1.1 changes
+v1.3 changes
+* use same basis vectors
+* change priors
+* increase basis number
+
+v1.2 changes
 * one model for all time of the year with temporal correlation, instead of one model for each month
 * forecast with changing basis vectors that are in +- 30 day of the year
 * error propagation turned off
