@@ -16,49 +16,49 @@ Sigmanew <- Sigma[P_forecast,,,drop=F]
 
 Y_forecast<-Var_forecast<-matrix(NA, nrow=nrow(P_forecast), ncol = steps )      
 for (t in 1:steps) {
-  date<-as.Date(D_forecast[t,1])
-  doy<-as.integer(format(date, "%j"))
-  if(doy==366) {doy<-365}
-  # moy<-as.integer(format(date, "%m"))
+  # date<-as.Date(D_forecast[t,1])
+  # doy<-as.integer(format(date, "%j"))
+  # if(doy==366) {doy<-365}
+  # # moy<-as.integer(format(date, "%m"))
+  # # 
+  # # X_basis<-X_basis_list[[moy]]
+  # # Y_basis<-Y_basis_list[[moy]]
+  # # P_basis<-P_basis_list[[moy]]
+  # # # D_basis<-D_basis_list[[moy]]
+  # # pars<-pars_list[[moy]]
+  # # log_p<-log_p_list[[moy]]
   # 
-  # X_basis<-X_basis_list[[moy]]
-  # Y_basis<-Y_basis_list[[moy]]
-  # P_basis<-P_basis_list[[moy]]
-  # # D_basis<-D_basis_list[[moy]]
-  # pars<-pars_list[[moy]]
-  # log_p<-log_p_list[[moy]]
-  
-  select_date<-data.frame(date_all=as.Date(D_all),
-                          doy_all=date2doy(D_all)) %>% 
-    mutate(a=abs(doy_all-doy),b=365-abs(doy_all-doy)) %>% 
-    rowwise() %>% 
-    mutate(diff=min(a,b))
-  window_id<-which(select_date$diff<=30&select_date$date_all<date)
-  X_window <- X_all[window_id, , drop = F]
-  Y_window <- Y_all[window_id, , drop = F]
-  P_window <- P_all[window_id, , drop = F]
-  D_window <- D_all[window_id, , drop = F]
-  
-  basisnumber<-min(basisnumber, nrow(X_window))
-  if (basisnumber==nrow(X_all)) {
-    X_basis <- X_window
-    Y_basis <- Y_window
-    P_basis <- P_window
-    D_basis <- D_window
-  } else {
-    set.seed(42)
-    cluster <- kmeans(cbind(P_window,X_window), basisnumber )
-    cluster_id_sort <- seq(basisnumber )[order(cluster$size, decreasing = T)]
-    basis_id <- rep(NA, basisnumber)
-    for (i in 1:basisnumber) {
-      # basis_id<-which(cl$cluster==cluster_id_sort[i])[length(which(cl$cluster==cluster_id_sort[i]))]
-      basis_id[i] <- sample(which(cluster$cluster == cluster_id_sort[i]), 1)
-    }
-    X_basis <- X_window[basis_id, , drop = F]
-    Y_basis <- Y_window[basis_id, , drop = F]
-    P_basis <- P_window[basis_id, , drop = F]
-    D_basis <- D_window[basis_id, , drop = F]
-  }
+  # select_date<-data.frame(date_all=as.Date(D_all),
+  #                         doy_all=date2doy(D_all)) %>% 
+  #   mutate(a=abs(doy_all-doy),b=365-abs(doy_all-doy)) %>% 
+  #   rowwise() %>% 
+  #   mutate(diff=min(a,b))
+  # window_id<-which(select_date$diff<=180&select_date$date_all<date)
+  # X_window <- X_all[window_id, , drop = F]
+  # Y_window <- Y_all[window_id, , drop = F]
+  # P_window <- P_all[window_id, , drop = F]
+  # D_window <- D_all[window_id, , drop = F]
+  # 
+  # basisnumber<-min(basisnumber, nrow(X_window))
+  # if (basisnumber==nrow(X_all)) {
+  #   X_basis <- X_window
+  #   Y_basis <- Y_window
+  #   P_basis <- P_window
+  #   D_basis <- D_window
+  # } else {
+  #   set.seed(42)
+  #   cluster <- kmeans(cbind(P_window,X_window), basisnumber )
+  #   cluster_id_sort <- seq(basisnumber )[order(cluster$size, decreasing = T)]
+  #   basis_id <- rep(NA, basisnumber)
+  #   for (i in 1:basisnumber) {
+  #     # basis_id<-which(cl$cluster==cluster_id_sort[i])[length(which(cl$cluster==cluster_id_sort[i]))]
+  #     basis_id[i] <- sample(which(cluster$cluster == cluster_id_sort[i]), 1)
+  #   }
+  #   X_basis <- X_window[basis_id, , drop = F]
+  #   Y_basis <- Y_window[basis_id, , drop = F]
+  #   P_basis <- P_window[basis_id, , drop = F]
+  #   D_basis <- D_window[basis_id, , drop = F]
+  # }
   
   res<-PrepareEmbedding(xnew,start=forecast_start+t,end=forecast_start+t, focalsites = P_forecast, lags=lags, neighbors=neighbors,vars=vars, distMat = distMat)
   newX<-res$X

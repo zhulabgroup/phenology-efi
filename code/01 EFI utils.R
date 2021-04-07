@@ -204,7 +204,7 @@ fmingrad_Rprop<-function (fun, xinit, sample_n, maxcount) {
     f<-fnew
     count<-count+1
     if (count%%10==0) {seed<-seed+1}
-    # print (paste0(count,", ",seed, ", ",x[nrow(x),]))
+    print (paste0(count,", ",seed, ", ",x[nrow(x),]))
   }
   
   res<-fun(x, sample_n,seed)
@@ -276,7 +276,7 @@ GPSDM<-function (pars, distMat,basisX, basisP,basisD, basisY=NULL, newX=NULL,new
     tDist1<-matrix(NA, nrow=nrow(X), ncol=nrow(X))
     for (i in 1:nrow(X)) {
       for (j in 1:nrow(X)) {
-        tDist1[i,j]<-tdistMat[J[i],J[j]]
+        tDist1[i,j]<-tdistMat[J[i],J[j]]#+abs(rnorm(1,0,0.01))
       }
     }
     kXX<-tau*exp(lC0)*(ps1+rho*(1-ps1))*exp(-tDist1^2*gamma2)
@@ -321,7 +321,7 @@ GPSDM<-function (pars, distMat,basisX, basisP,basisD, basisY=NULL, newX=NULL,new
     tDist2<-matrix(NA, nrow=nrow(Xt), ncol=nrow(X))
     for (i in 1:nrow(Xt)) {
       for (j in 1:nrow(X)) {
-        tDist2[i,j]<-tdistMat[Jt[i],J[j]]
+        tDist2[i,j]<-tdistMat[Jt[i],J[j]]#+abs(rnorm(1,0,0.01))
       }
     }
     kXtX<-tau*exp(lC0)*(ps2+rho*(1-ps2))*exp(-tDist2^2*gamma2)
@@ -345,7 +345,7 @@ GPSDM<-function (pars, distMat,basisX, basisP,basisD, basisY=NULL, newX=NULL,new
     tDist3<-matrix(NA, nrow=nrow(Xt), ncol=nrow(Xt))
     for (i in 1:nrow(Xt)) {
       for (j in 1:nrow(Xt)) {
-        tDist3[i,j]<-tdistMat[Jt[i],Jt[j]]
+        tDist3[i,j]<-tdistMat[Jt[i],Jt[j]]#+abs(rnorm(1,0,0.01))
       }
     }
     kXtXt<-tau*exp(lC0)*(ps3+rho*(1-ps3))*exp(-tDist3^2*gamma2)
@@ -363,6 +363,20 @@ GPSDM<-function (pars, distMat,basisX, basisP,basisD, basisY=NULL, newX=NULL,new
     Ct<-(Ct+t(Ct))/2
     # Ct<-as.matrix(Matrix::nearPD(Ct)$mat)
     
+    # A<-kXtXt+ve*Id
+    # LA<-chol(A)
+    # LAinv<-solve(LA)
+    # Ainv<-tcrossprod(LAinv)
+    # 
+    # U<-kXtX
+    # V<-kXXt
+    # S <- C-V%*%Ainv%*%U
+    # LS<-chol(S)
+    # LSinv<-solve(LS)
+    # Sinv<-tcrossprod(LSinv)
+    # 
+    # Ctinv<-Ainv+Ainv%*%U%*%Sinv%*%V%*%Ainv
+    # logdetCt<-log(det(S))+log(det(Cinv))+log(det(A))
     Lt<-chol(Ct)
     Ltinv<-solve(Lt)#%*%Id
     Ctinv<-tcrossprod(Ltinv)
@@ -429,7 +443,7 @@ GPSDM<-function (pars, distMat,basisX, basisP,basisD, basisY=NULL, newX=NULL,new
     if (!is.null(newY)) {
       Yt<-newY
       #####likelihood#####
-      like<--.5*t(Yt-mt)%*%Ctinv%*%(Yt-mt)-sum(log(diag(Lt)))
+      like<--.5*t(Yt-mt)%*%Ctinv%*%(Yt-mt)-sum(log(diag(Lt)))#0.5*logdetCt
       
       #####gradient#####
       dl<-matrix(0, nrow= ndim+3, ncol=1)

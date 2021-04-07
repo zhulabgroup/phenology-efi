@@ -1,14 +1,15 @@
 path<-paste0("archive/",today,"/")
 dir.create(path)
 
-cl <- makeCluster(6, outfile = "")
+cl <- makeCluster(5, outfile = "")
 registerDoSNOW(cl)
 
 epoch=1
 
 # neighbors and lags
 var_list <- c("gcc" 
-              , "tmean", "prcp"
+              , "tmean"
+              , "prcp"
               )
 vars <- 1:length(var_list)
 
@@ -76,14 +77,14 @@ for (i in 1:length(var_list)) {
 # Initial  hyperparameters
 phimin <- 1e-50
 phimax <- 0.99
-vemin <- 0.0001
-vemax <- 0.99
-taumin <- .01
-taumax <- 4.99
-gammamin <- 0.01 # exp(-d^2*gamma) gamma smaller -> u more similar over space
-gammamax <- 1
+vemin <- 0.001
+vemax <- 0.999
+taumin <- 0.001
+taumax <- 0.999#4.99
+gammamin <- 1/30^2 # exp(-d^2*gamma) gamma smaller -> u more similar over space/time
+gammamax <- 1/1^2
 rhomin <- .0001 
-rhomax <- 1
+rhomax <- 0.999
 
 V_list<-vector(mode="list")
 for (v in 1:length(vars)){
@@ -100,8 +101,8 @@ priors <- list(
   E_ve = 0,
   V_ve = 1,
   E_tau = 0,
-  V_tau = 1,
-  E_gamma = 0.01,
+  V_tau = 0.01,
+  E_gamma = 1/10^2,
   V_gamma = 100,
   E_rho = 0.5,
   V_rho = 5
@@ -111,4 +112,4 @@ num_part <- 20
 
 num_epoch <- 1 #20
 
-basisnumber <- 200 # I tried 500 but exceeded MEM capacity
+basisnumber <-500 # I tried 500 but exceeded MEM capacity

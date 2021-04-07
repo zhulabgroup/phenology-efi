@@ -40,7 +40,7 @@ if (basisnumber==nrow(X_all)) {
 } else {
   J_all<-date2doy(D_all)
   set.seed(42)
-  cluster <- kmeans(cbind(P_all,X_all,J_all), basisnumber )
+  cluster <- kmeans(cbind(P_all,J_all,X_all), basisnumber )
   cluster_id_sort <- seq(basisnumber )[order(cluster$size, decreasing = T)]
   basis_id <- rep(NA, basisnumber)
   for (i in 1:basisnumber) {
