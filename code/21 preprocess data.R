@@ -81,19 +81,37 @@ for (i in 1:nrow(coord_df)) {
 date_id<-1:length(seq(min(ts_all$time),max(ts_all$time), by = 1))  #using percentile in NEON data
 df_upper_lower<-vector(mode="list")
 for(j in 1:length(var_list)) {
-  df_upper_lower[[j]]<-data.frame(x[,date_id,j]) %>% 
-    mutate(site=row_number()) %>% 
-    gather(key="date", value = "value",-site) %>% 
-    drop_na() %>% 
-    group_by(site) %>% 
-    dplyr::summarize(lower=quantile(value, 0.05),
-                     upper=quantile(value, 0.95)) %>% 
-    mutate(range=upper-lower)
+  if (var_list[j]%in% c("gcc")) {
+    df_upper_lower[[j]]<-data.frame(x[,,j]) %>% 
+      mutate(site=row_number()) %>% 
+      gather(key="date", value = "value",-site) %>% 
+      drop_na() %>% 
+      group_by(site) %>% 
+      dplyr::summarize(lower=quantile(value, 0.025),
+                       upper=quantile(value, 0.975)) %>% 
+      mutate(range=upper-lower)
+  } else { #scale for all sites
+    all_upper_lower<-data.frame(x[,,j]) %>% 
+      mutate(site=row_number()) %>% 
+      gather(key="date", value = "value",-site) %>% 
+      drop_na() %>% 
+      dplyr::summarize(lower=quantile(value, 0.025),
+                       upper=quantile(value, 0.975)) %>% 
+      mutate(range=upper-lower)
+    df_upper_lower[[j]]<-data.frame(x[,,j]) %>% 
+      mutate(site=row_number()) %>% 
+      gather(key="date", value = "value",-site) %>% 
+      drop_na() %>% 
+      distinct(site) %>% 
+      mutate(lower=all_upper_lower$lower,
+             upper=all_upper_lower$upper,
+             range=all_upper_lower$range)
+  }
   
   lower<-matrix(df_upper_lower[[j]]$lower)%*%matrix(1, nrow=1, ncol=ncol(x[,,j]) )
   range<-matrix(df_upper_lower[[j]]$range)%*%matrix(1, nrow=1, ncol=ncol(x[,,j]) )
   
-  x[,,j]<-(x[,,j]-lower)/range
+  x[,,j]<-(x[,,j]-lower)/range-0.5
 }
 
 

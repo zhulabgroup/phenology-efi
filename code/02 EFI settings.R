@@ -75,21 +75,22 @@ for (i in 1:length(var_list)) {
 }
 
 # Initial  hyperparameters
+# https://chi-feng.github.io/gp-demo/
 phimin <- 1e-50
-phimax <- 0.99
+phimax <- (2*pi)^2/2 # denominator is number of wiggles/zero crossings #1/0.2
 vemin <- 0.001
-vemax <- 0.999
+vemax <-  0.25^2-vemin # 0.099
 taumin <- 0.001
-taumax <- 0.999#4.99
+taumax <-  0.25^2-taumin#4.99
 gammamin <- 1/30^2 # exp(-d^2*gamma) gamma smaller -> u more similar over space/time
 gammamax <- 1/1^2
 rhomin <- .0001 
-rhomax <- 0.999
+rhomax <- 1-rhomin
 
 V_list<-vector(mode="list")
 for (v in 1:length(vars)){
   for (i in 1:length(lags[[v]])) {
-    V_list <- rlist::list.append(V_list,0.05*exp(-(max(lags[[v]][[i]])/16/23)^2)) 
+    V_list <- rlist::list.append(V_list,0.1*exp(-(max(lags[[v]][[i]])/365)^2/5)) 
   }
 }
 V_phi<-unlist(V_list)
@@ -98,18 +99,18 @@ priors <- list(
   # V_phi = matrix(0.05, ncol = 1, nrow = ndim),
   V_phi = V_phi, #informed prior
   # Other priors
-  E_ve = 0,
-  V_ve = 1,
-  E_tau = 0,
-  V_tau = 0.01,
-  E_gamma = 1/10^2,
-  V_gamma = 100,
-  E_rho = 0.5,
-  V_rho = 5
+  E_ve =  0,#0.25^2/2,
+  V_ve = 5,
+  E_tau = 0.25^2,#0.25^2/2,
+  V_tau = 5,
+  E_gamma = 0,#1/10^2,
+  V_gamma = 5,
+  E_rho = 1,
+  V_rho = 1
 )
 
 num_part <- 20
 
 num_epoch <- 1 #20
 
-basisnumber <-500 # I tried 500 but exceeded MEM capacity
+basisnumber <-500 

@@ -1,9 +1,9 @@
-today_list<-seq(as.Date("2021-04-06"),as.Date("2021-04-06"),by=1)
+today_list<-seq(as.Date("2021-04-15"),as.Date("2021-04-20"),by=1)
 for (d in 1:length(today_list)) {
   today<-today_list[d]
   
   forecast_project_id<-"UCSC_P_EDM" 
-  forecast_model_id   <- "v1.3"
+  forecast_model_id   <- "v1.4"
   forecast_iteration_id<- uuid::UUIDgenerate() 
   
   source("code/01 EFI utils.R")

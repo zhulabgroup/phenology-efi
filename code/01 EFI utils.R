@@ -3,6 +3,7 @@ library(phenocamapi)
 library(LaplacesDemon)
 library(doSNOW)
 library(EML)
+library(lubridate)
 
 compare_stats<-function ( obs_ori, pred_ori,obs=NULL,pred=NULL) {
   corr<-cor(obs_ori, pred_ori)
@@ -446,22 +447,22 @@ GPSDM<-function (pars, distMat,basisX, basisP,basisD, basisY=NULL, newX=NULL,new
       like<--.5*t(Yt-mt)%*%Ctinv%*%(Yt-mt)-sum(log(diag(Lt)))#0.5*logdetCt
       
       #####gradient#####
-      dl<-matrix(0, nrow= ndim+3, ncol=1)
+      dl<-matrix(0, nrow= ndim+4, ncol=1)
       vQ<-matrix(tcrossprod(Ctinv%*%(Yt-mt))-Ctinv, nrow = 1)
       dC<-vector(mode="list")
       for (i in 1:ndim) {
         dC[[i]]<--0.5*DD3[[i]]*kXtXt+0.5*(DD2[[i]]*kXtX)%*%Cinv%*%kXXt+0.5*kXtX%*%Cinv%*%(t(DD2[[i]])*kXXt)-0.5*kXtX%*%Cinv%*%(DD1[[i]]*kXX)%*%Cinv%*%kXXt
-        dl[i]<-.5*vQ%*%matrix(dC[[i]], ncol = 1)
+        dl[i,1]<-.5*vQ%*%matrix(dC[[i]], ncol = 1)
       }
       dC[[ndim+1]]<-diag(1, nrow=nrow(Xt), ncol=nrow(Xt))+kXtX%*%Cinv%*%Cinv%*%kXXt
-      dl[ndim+1]<-.5*vQ%*%matrix(dC[[ndim+1]], ncol=1)
+      dl[ndim+1,1]<-.5*vQ%*%matrix(dC[[ndim+1]], ncol=1)
       dC[[ndim+2]]<-kXtXt/tau-(kXtX/tau)%*%Cinv%*%kXXt-kXtX%*%Cinv%*%(kXXt/tau)+kXtX%*%Cinv%*%(kXX/tau)%*%Cinv%*%kXXt
-      dl[ndim+2]<-.5*vQ%*%matrix(dC[[ndim+2]], ncol=1)
+      dl[ndim+2,1]<-.5*vQ%*%matrix(dC[[ndim+2]], ncol=1)
       dC[[ndim+3]]<-kXtXt*(1-ps3)/rho-(kXtX*(1-ps2)/rho)%*%Cinv%*%kXXt-kXtX%*%Cinv%*%(kXXt*(1-t(ps2))/rho)+kXtX%*%Cinv%*%(kXX*(1-ps1)/rho)%*%Cinv%*%kXXt
       # dC[[ndim+3]]<-kXtXt*(-Dist3^2)-(kXtX*(-Dist2^2))%*%Cinv%*%kXXt-kXtX%*%Cinv%*%(kXXt*(-t(Dist2)^2))+kXtX%*%Cinv%*%(kXX*(-Dist1^2))%*%Cinv%*%kXXt
-      dl[ndim+3]<-.5*vQ%*%matrix(dC[[ndim+3]], ncol=1)
+      dl[ndim+3,1]<-.5*vQ%*%matrix(dC[[ndim+3]], ncol=1)
       dC[[ndim+4]]<-kXtXt*(-tDist3^2)-(kXtX*(-tDist2^2))%*%Cinv%*%kXXt-kXtX%*%Cinv%*%(kXXt*(-t(tDist2)^2))+kXtX%*%Cinv%*%(kXX*(-tDist1^2))%*%Cinv%*%kXXt
-      dl[ndim+4]<-.5*vQ%*%matrix(dC[[ndim+4]], ncol=1)
+      dl[ndim+4,1]<-.5*vQ%*%matrix(dC[[ndim+4]], ncol=1)
     }
     
     # derivative for hyperparameters wrt transformed hyperparameters -- for gradient calculation

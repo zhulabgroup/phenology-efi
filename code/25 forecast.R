@@ -152,9 +152,9 @@ obs_df<-left_join(obs_df,var_obs_df, by=c("site", "date")) %>%
          upper=y+1.96*sqrt(variance))
 obs_df_ori<-obs_df %>% 
   left_join(df_upper_lower[[1]], by="site")%>% 
-  mutate(y=y*range+lower.y,
-         upper=upper.x*range+lower.y,
-         lower=lower.x*range+lower.y) #%>% 
+  mutate(y=(y+0.5)*range+lower.y,
+         upper=(upper.x+0.5)*range+lower.y,
+         lower=(lower.x+0.5)*range+lower.y) #%>% 
 # mutate(y=y*(range_list[[1]][2]-range_list[[1]][1])+range_list[[1]][1])
 
 # p<-ggplot()+
@@ -173,9 +173,9 @@ forecast_df<-left_join(forecast_df,var_forecast_df, by=c("site", "date")) %>%
 
 forecast_df_ori<-forecast_df %>% 
   left_join(df_upper_lower[[1]], by="site",suffix = c("", ".scale"))%>% 
-  mutate(value=value*range+lower.scale,
-         upper=upper*range+lower.scale,
-         lower=lower*range+lower.scale) #%>% 
+  mutate(value=(value+0.5)*range+lower.scale,
+         upper=(upper+0.5)*range+lower.scale,
+         lower=(lower+0.5)*range+lower.scale) #%>% 
 # mutate(median=median*(range_list[[1]][2]-range_list[[1]][1])+range_list[[1]][1],
 #        upper=upper*(range_list[[1]][2]-range_list[[1]][1])+range_list[[1]][1],
 #        lower=lower*(range_list[[1]][2]-range_list[[1]][1])+range_list[[1]][1])

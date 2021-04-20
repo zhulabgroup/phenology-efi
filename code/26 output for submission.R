@@ -43,12 +43,28 @@ p<-ggplot()+
   geom_line(data=forecast_df_ori %>% filter(site%in%site_view), aes(x=date, y=value), col="blue")+
   geom_ribbon(data=forecast_df_ori%>% filter(site%in%site_view), aes(x=date, ymax=upper, ymin=lower), fill="blue", alpha=0.25)+
   geom_vline(xintercept = date_list[forecast_start+1], col="blue", alpha=0.5)+
-  geom_vline(xintercept = date_list[forecast_start+1-365], col="blue", alpha=0.5)+
+  geom_vline(xintercept = date_list[forecast_start+1-years(1:4)], col="blue", alpha=0.5)+
   ylab("GCC_90")+
+  ylim(min(obs_df_ori$lower,forecast_df_ori$lower ,na.rm = T),
+       max(obs_df_ori$upper,forecast_df_ori$upper ,na.rm = T))+
   facet_wrap(~site, ncol = 2,labeller = labeller(site=site_label))+
   theme_classic()
 
 cairo_pdf(paste0(path,"phenology-",year,"-",month,"-",day,"-UCSC_P_EDM.pdf"), width = 16, height = 8)
+print(p)
+dev.off()
+
+p<-ggplot()+
+  geom_line(data=obs_df_ori  %>% filter(site%in%site_view) %>% filter(date>=date_list[forecast_start+1]), aes(x=date, y=y))+
+  geom_ribbon(data=obs_df_ori%>% filter(site%in%site_view) %>% filter(date>=date_list[forecast_start+1]), aes(x=date, ymax=upper, ymin=lower), alpha=0.25)+
+  geom_line(data=forecast_df_ori %>% filter(site%in%site_view) %>% filter(date>=date_list[forecast_start+1]), aes(x=date, y=value), col="blue")+
+  geom_ribbon(data=forecast_df_ori%>% filter(site%in%site_view) %>% filter(date>=date_list[forecast_start+1]), aes(x=date, ymax=upper, ymin=lower), fill="blue", alpha=0.25)+
+  ylab("GCC_90")+
+  # ylim(-0.1,1.1)+
+  facet_wrap(~site, ncol = 2,labeller = labeller(site=site_label))+
+  theme_classic()
+
+cairo_pdf(paste0(path,"phenology-",year,"-",month,"-",day,"-UCSC_P_EDM_fore_only.pdf"), width = 16, height = 8)
 print(p)
 dev.off()
 ########

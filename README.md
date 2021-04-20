@@ -1,5 +1,11 @@
 # EFI
 
+v1.4 changes
+* scaling using 96% interval
+* scaling environmental variables to percentile in all sites
+* scaling to -0.5 to 0.5 instead of 0 to 1
+* change prior ranges, modes, and variances
+
 v1.3 changes
 * use same basis vectors
 * change priors
