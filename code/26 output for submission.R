@@ -43,7 +43,7 @@ p<-ggplot()+
   geom_line(data=forecast_df_ori %>% filter(site%in%site_view), aes(x=date, y=value), col="blue")+
   geom_ribbon(data=forecast_df_ori%>% filter(site%in%site_view), aes(x=date, ymax=upper, ymin=lower), fill="blue", alpha=0.25)+
   geom_vline(xintercept = date_list[forecast_start+1], col="blue", alpha=0.5)+
-  geom_vline(xintercept = date_list[forecast_start+1-years(1:4)], col="blue", alpha=0.5)+
+  geom_vline(xintercept = date_list[forecast_start+1]-years(1:4), col="blue", alpha=0.5)+
   ylab("GCC_90")+
   ylim(min(obs_df_ori$lower,forecast_df_ori$lower ,na.rm = T),
        max(obs_df_ori$upper,forecast_df_ori$upper ,na.rm = T))+

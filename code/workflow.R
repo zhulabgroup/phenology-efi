@@ -1,4 +1,4 @@
-today_list<-seq(as.Date("2021-04-15"),as.Date("2021-04-20"),by=1)
+today_list<-seq(as.Date("2021-04-15"),as.Date("2021-04-15"),by=1)
 for (d in 1:length(today_list)) {
   today<-today_list[d]
   
