@@ -106,7 +106,7 @@ priors <- list(
   E_gamma = 0,#1/10^2,
   V_gamma = 5,
   E_rho = 1,
-  V_rho = 1
+  V_rho = 0.5
 )
 
 num_part <- 20
