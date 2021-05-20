@@ -31,8 +31,8 @@ for (i in 1:length(vars)) {
     lags[[i]] <- 1:1
   } # for doy
   if (var_list[vars[i]]  =="gcc") {
-    lags[[i]] <- list()#list(1,2,3,4,5)
-    for (period in 1:23) {
+    lags[[i]] <- list(1)#list(1,2,3,4,5)
+    for (period in 1:8) {
       lags[[i]] <-rlist::list.append(lags[[i]] ,(period-1)*16+1:16)
     }
   }
@@ -105,8 +105,8 @@ priors <- list(
   V_tau = 5,
   E_gamma = 0,#1/10^2,
   V_gamma = 5,
-  E_rho = 1,
-  V_rho = 0.5
+  E_rho = 0,
+  V_rho = 0.1
 )
 
 num_part <- 20

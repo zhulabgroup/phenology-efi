@@ -1,5 +1,9 @@
 # EFI
 
+v1.5 changes
+* add one daily lag for gcc to ensure continuity
+* change prior ranges, modes, and variances
+
 v1.4 changes
 * scaling using 96% interval
 * scaling environmental variables to percentile in all sites
