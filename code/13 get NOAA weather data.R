@@ -9,19 +9,19 @@ if(update) {
   dir.create(base_dir, recursive = T)
   
   all_date_list<-seq(as.Date("2020-09-25"),today,by=1)
-  # if (length(list.files(base_dir))==0) {
-  #   download_date_list<-all_date_list
-  # } else {
-  #   downloaded_date_list<-list.files(paste0(base_dir,"BART"))
-  #   download_date_list<-as.Date(setdiff(as.character(all_date_list),downloaded_date_list))
-  # }
+  if (length(list.files(base_dir))==0) {
+    download_date_list<-all_date_list
+  } else {
+    downloaded_date_list<-list.files(paste0(base_dir,"BART"))
+    download_date_list<-as.Date(setdiff(as.character(all_date_list),downloaded_date_list))
+  }
 
   for(k in 1:length(site_list)){
-    for(j in 1:length(all_date_list)){
-      if (!dir.exists(paste0(base_dir,site_list[k],"/",all_date_list[j],"/",cycle))|
-          length(list.files(paste0(base_dir,site_list[k],"/",all_date_list[j],"/",cycle)))<31) {
+    for(j in 1:length(download_date_list)){
+      if (!dir.exists(paste0(base_dir,site_list[k],"/",download_date_list[j],"/",cycle))|
+          length(list.files(paste0(base_dir,site_list[k],"/",download_date_list[j],"/",cycle)))<31) {
         try(download_noaa_files_s3(siteID = coord_df$siteID[k],
-                                   date = all_date_list[j],
+                                   date = download_date_list[j],
                                    cycle = cycle,
                                    local_directory =getwd() ))
       }

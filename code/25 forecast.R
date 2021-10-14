@@ -168,6 +168,7 @@ obs_df_ori<-obs_df %>%
 ###
 forecast_df<-left_join(forecast_df,var_forecast_df, by=c("site", "date")) %>% 
   dplyr::rename(value=value.x, variance=value.y) %>% 
+  mutate(variance=variance/4) %>% 
   mutate(lower=value-1.96*sqrt(variance),
          upper=value+1.96*sqrt(variance))
 

@@ -23,7 +23,18 @@ if (update) {
   release_this<-lubridate::floor_date(today-15, unit="month")-months(1)
   
   # Request data availability info
-  req.temp <- GET("http://data.neonscience.org/api/v0/products/DP1.00003.001")
+  err<-T
+  while (err) {
+    tryCatch( {
+      req.temp <- GET("http://data.neonscience.org/api/v0/products/DP1.00003.001")
+      err<-F
+    },
+    error = function(e) {
+      err<-T
+      message(conditionMessage(e))
+    })
+  }
+  
   # make this JSON readable
   avail.temp <- jsonlite::fromJSON(content(req.temp, as="text"), simplifyDataFrame=T, flatten=T)
   # get data availability list for the product
@@ -37,7 +48,17 @@ if (update) {
                if(length(urls_new)>0) {
                  temp_df_one_site<-vector(mode="list",length = length(urls_new))
                  for (j in 1:length(urls_new)) {
-                   tmp <- GET(urls_new[j])
+                   err<-T
+                   while (err) {
+                     tryCatch( {
+                       tmp <- GET(urls_new[j])
+                       err<-F
+                     },
+                     error = function(e) {
+                       err<-T
+                       message(conditionMessage(e))
+                     })
+                   }
                    tmp.files <- jsonlite::fromJSON(content(tmp, as="text"))
                    # tmp.files$data$files$name
                    if (length(grep("TAAT_30min", tmp.files$data$files$name))>0) {
@@ -98,7 +119,18 @@ if (update) {
   release_this<-lubridate::floor_date(today-15, unit="month")
   
   # Request data availability info
-  req.humi <- GET("http://data.neonscience.org/api/v0/products/DP1.00098.001")
+  err<-T
+  while (err) {
+    tryCatch( {
+      req.humi <- GET("http://data.neonscience.org/api/v0/products/DP1.00098.001")
+      err<-F
+    },
+    error = function(e) {
+      err<-T
+      message(conditionMessage(e))
+    })
+  }
+  
   # make this JSON readable
   avail.humi <- jsonlite::fromJSON(content(req.humi, as="text"), simplifyDataFrame=T, flatten=T)
   # get data availability list for the product
@@ -112,7 +144,17 @@ if (update) {
                if(length(urls_new)>0) {
                  humi_df_one_site<-vector(mode="list")
                  for (j in 1:length(urls_new)) {
-                   tmp <- GET(urls_new[j])
+                   err<-T
+                   while (err) {
+                     tryCatch( {
+                       tmp <- GET(urls_new[j])
+                       err<-F
+                     },
+                     error = function(e) {
+                       err<-T
+                       message(conditionMessage(e))
+                     })
+                   }
                    tmp.files <- jsonlite::fromJSON(content(tmp, as="text"))
                    # tmp.files$data$files$name
                    if (length(grep("000.060.030.RH_30min", tmp.files$data$files$name))>0) {
@@ -170,7 +212,18 @@ if (update) {
   release_this<-lubridate::floor_date(today-15, unit="month")
   
   # Request data availability info
-  req.prcp <- GET("http://data.neonscience.org/api/v0/products/DP1.00006.001")
+  err<-T
+  while (err) {
+    tryCatch( {
+      req.prcp <- GET("http://data.neonscience.org/api/v0/products/DP1.00006.001")
+      err<-F
+    },
+    error = function(e) {
+      err<-T
+      message(conditionMessage(e))
+    })
+  }
+  
   # make this JSON readable
   avail.prcp <- jsonlite::fromJSON(content(req.prcp, as="text"), simplifyDataFrame=T, flatten=T)
   # get data availability list for the product
@@ -183,7 +236,17 @@ if (update) {
                if(length(urls_new)>0) {
                  prcp_df_one_site<-vector(mode="list")
                  for (j in 1:length(urls_new)) {
-                   tmp <- GET(urls_new[j])
+                   err<-T
+                   while (err) {
+                     tryCatch( {
+                       tmp <- GET(urls_new[j])
+                       err<-F
+                     },
+                     error = function(e) {
+                       err<-T
+                       message(conditionMessage(e))
+                     })
+                   }
                    tmp.files <- jsonlite::fromJSON(content(tmp, as="text"))
                    # tmp.files$data$files$name
                    if (length(grep("PRIPRE_30min", tmp.files$data$files$name))>0) {
