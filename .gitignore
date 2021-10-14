@@ -1,6 +1,6 @@
 /noaa
 /NEON weather
-# /archive
+/archive
 
 # History files
 .Rhistory
