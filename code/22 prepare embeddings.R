@@ -1,5 +1,5 @@
 for(site in 1:nrow(coord_df)) {
-  path_train<-paste0(path,"train/",site)
+  path_train<-paste0(path, focal_var,"/train/",site)
   dir.create(path_train, recursive=T)
   res<-PrepareEmbedding(x,start=max(unlist(lags))+1,end=length(date_list), focalsites =site, lags=lags, neighbors=neighbors,vars=vars, distMat = distMat)
   X_train<-res$X

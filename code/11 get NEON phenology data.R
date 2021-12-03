@@ -27,13 +27,14 @@ if (update) {
     phenoData <- download.phenocam(URL = URL_gcc90)
     dates <- unique(phenoData$date)
     phenoData_individual <- download.phenocam(URL=URL_individual,skipNum = 17)
-    gcc_sd <- calculate.phenocam.uncertainty(dat=phenoData_individual,dates=dates) ##Calculates standard deviations on daily gcc90 values
+    gcc_sd <- calculate.phenocam.uncertainty(dat=phenoData_individual,dates=dates, var="gcc_90") ##Calculates standard deviations on daily gcc90 values
+    rcc_sd <- calculate.phenocam.uncertainty(dat=phenoData_individual,dates=dates, var="rcc_90") ##Calculates standard deviations on daily rcc90 values
     
     subPhenoData <- phenoData %>% 
       mutate(siteID = stringr::str_sub(siteName, 10, 13), 
              time = date) %>% 
-      dplyr::select(time, siteID, gcc_90)
-    subPhenoData <- cbind(subPhenoData,gcc_sd)
+      dplyr::select(time, siteID, gcc_90, rcc_90) %>% 
+      cbind(gcc_sd, rcc_sd)
     
     allData <- rbind(allData,subPhenoData)
     
@@ -53,7 +54,6 @@ if (update) {
   
   
   allData <- left_join(full_time, allData, by = c("time", "siteID"))
-  
   write_csv(allData, paste0(path, "phenology-targets.csv"))
 }
 
@@ -65,12 +65,14 @@ ts_all<-read_csv(paste0(path,"phenology-targets.csv")) %>%
 
 if (update) {
   p<-ggplot(ts_all)+
-    geom_line(aes(x=time, y=gcc_90, col=siteID))+
-    geom_ribbon(aes(x=time, ymin=gcc_90-1.96*gcc_sd, ymax=gcc_90+1.96*gcc_sd, fill=siteID), alpha=0.5)+
+    geom_line(aes(x=time, y=rcc_90), col="orange")+
+    geom_ribbon(aes(x=time, ymin=rcc_90-1.96*rcc_sd, ymax=rcc_90+1.96*rcc_sd), fill="orange", alpha=0.5)+
+    geom_line(aes(x=time, y=gcc_90), col="darkgreen")+
+    geom_ribbon(aes(x=time, ymin=gcc_90-1.96*gcc_sd, ymax=gcc_90+1.96*gcc_sd), fill="darkgreen", alpha=0.5)+
     theme_classic()+
     facet_wrap(~siteID)+
     guides(col=F, fill=F)
-  cairo_pdf(paste0(path,"phenology-targets.pdf"))
+  cairo_pdf(paste0(path, "phenology-targets.pdf"))
   print(p)
   dev.off()
 }

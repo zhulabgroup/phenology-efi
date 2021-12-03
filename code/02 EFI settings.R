@@ -1,13 +1,7 @@
-path<-paste0("archive/",today,"/")
-dir.create(path)
-
-cl <- makeCluster(5, outfile = "")
-registerDoSNOW(cl)
-
 epoch=1
 
 # neighbors and lags
-var_list <- c("gcc" 
+var_list <- c(focal_var
               , "tmean"
               , "prcp"
               )
@@ -30,7 +24,7 @@ for (i in 1:length(vars)) {
   if (var_list[vars[i]]  %in% c("doy", "gccmean")) {
     lags[[i]] <- 1:1
   } # for doy
-  if (var_list[vars[i]]  =="gcc") {
+  if (var_list[vars[i]]  %in% c("gcc", "rcc")) {
     lags[[i]] <- list(1)#list(1,2,3,4,5)
     for (period in 1:8) {
       lags[[i]] <-rlist::list.append(lags[[i]] ,(period-1)*16+1:16)
@@ -62,17 +56,17 @@ for (i in 1:length(vars)) {
   ndim <- ndim + length(neighbors[[i]]) * length(lags[[i]])
 }
 
-range_list<-vector(mode="list", length=length(var_list))
-for (i in 1:length(var_list)) {
-  var<-var_list[i]
-  if (var=="gcc") {range_list[[i]]<-c(0.3, 0.5)}
-  if (var=="gccmean") {range_list[[i]]<-c(0.3, 0.5)}
-  if (var=="tmax") {range_list[[i]]<-c(-20, 40)}
-  if (var=="tmin") {range_list[[i]]<-c(-30, 20)}
-  if (var=="humi") {range_list[[i]]<-c(0, 1)}
-  # if (var=="srad") {range_list[[i]]<-c(0, 700)}
-  if (var=="prcp") {range_list[[i]]<-c(0, 100)}
-}
+# range_list<-vector(mode="list", length=length(var_list))
+# for (i in 1:length(var_list)) {
+#   var<-var_list[i]
+#   if (var=="gcc") {range_list[[i]]<-c(0.3, 0.5)}
+#   if (var=="gccmean") {range_list[[i]]<-c(0.3, 0.5)}
+#   if (var=="tmax") {range_list[[i]]<-c(-20, 40)}
+#   if (var=="tmin") {range_list[[i]]<-c(-30, 20)}
+#   if (var=="humi") {range_list[[i]]<-c(0, 1)}
+#   # if (var=="srad") {range_list[[i]]<-c(0, 700)}
+#   if (var=="prcp") {range_list[[i]]<-c(0, 100)}
+# }
 
 # Initial  hyperparameters
 # https://chi-feng.github.io/gp-demo/
@@ -116,3 +110,6 @@ num_epoch <- 1 #20
 basisnumber <-100 
 
 maxcount<-100
+
+if (focal_var=="gcc") {sd_thres<-0.0001}
+if (focal_var=="rcc") {sd_thres<-0.001}

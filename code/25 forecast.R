@@ -15,7 +15,7 @@ xnew <- x[P_forecast,,,drop=F]
 Sigmanew <- Sigma[P_forecast,,,drop=F]
 
 for(site in 1:nrow(coord_df)) {
-  path_results<-paste0(path, "results/", site)
+  path_results<-paste0(path,focal_var, "/results/", site)
   X_basis<-as.matrix(read_csv(paste0(path_results,"/X_basis.csv")))
   Y_basis<-as.matrix(read_csv(paste0(path_results,"/Y_basis.csv")))
   P_basis<-as.matrix(read_csv(paste0(path_results,"/P_basis.csv")))
@@ -94,46 +94,42 @@ var_forecast_df<-as.data.frame(Var_forecast) %>%
   mutate(site=P_forecast) %>% 
   gather(key="date", value="value",-site) %>% 
   mutate(date=as.Date(date))
-path_analyses<-paste0(path,"analyses/")
+path_analyses<-paste0(path,focal_var,"/analyses")
 dir.create(path_analyses, recursive = T)
 write_csv(forecast_df,paste0(path_analyses, "/forecast.csv"))
 write_csv(var_forecast_df,paste0(path_analyses, "/var_forecast.csv"))
 
 #### visualize
-obs_df<-as.data.frame(x[P_fit,,1, drop=F]) %>%
-  as_tibble() %>% 
-  mutate(site=P_fit) %>%
-  gather(key="date", value="y", -site) %>% 
-  mutate(date=as.Date(date)) #%>%
-# mutate(site=as.character(site)) %>% 
-# drop_na() %>% 
-# mutate(year=as.integer(format(date, "%Y")))
-var_obs_df<-as.data.frame(Sigma[P_fit,,1, drop=F]) %>%
-  as_tibble() %>% 
-  mutate(site=P_fit) %>%
-  gather(key="date", value="y", -site) %>% 
-  mutate(date=as.Date(date)) #%>%
-# mutate(site=as.character(site)) %>% 
-# drop_na() %>% 
-# mutate(year=as.integer(format(date, "%Y")))
-obs_df<-left_join(obs_df,var_obs_df, by=c("site", "date")) %>% 
-  dplyr::rename(y=y.x, variance=y.y) %>% 
-  mutate(lower=y-1.96*sqrt(variance),
-         upper=y+1.96*sqrt(variance))
-obs_df_ori<-obs_df %>% 
-  left_join(df_upper_lower[[1]], by="site")%>% 
-  mutate(y=(y+0.5)*range+lower.y,
-         upper=(upper.x+0.5)*range+lower.y,
-         lower=(lower.x+0.5)*range+lower.y) #%>% 
-# mutate(y=y*(range_list[[1]][2]-range_list[[1]][1])+range_list[[1]][1])
-
-# p<-ggplot()+
-#   geom_line(data=obs_df_ori, aes(x=date, y=y), alpha=0.5)+
-#   geom_ribbon(data=obs_df_ori, aes(x=date, ymin=lower, ymax=upper),fill="blue", alpha=0.5)+
-#   ylab("GCC")+
-#   facet_wrap(~site, ncol = 3)+
-#   theme_classic()
-# p
+# obs_df<-as.data.frame(x[P_fit,,1, drop=F]) %>%
+#   as_tibble() %>%
+#   mutate(site=P_fit) %>%
+#   gather(key="date", value="y", -site) %>%
+#   mutate(date=as.Date(date)) #%>%
+# # mutate(site=as.character(site)) %>%
+# # drop_na() %>%
+# # mutate(year=as.integer(format(date, "%Y")))
+# var_obs_df<-as.data.frame(Sigma[P_fit,,1, drop=F]) %>%
+#   as_tibble() %>%
+#   mutate(site=P_fit) %>%
+#   gather(key="date", value="y", -site) %>%
+#   mutate(date=as.Date(date)) #%>%
+# obs_df<-left_join(obs_df,var_obs_df, by=c("site", "date")) %>%
+#   dplyr::rename(y=y.x, variance=y.y) %>%
+#   mutate(lower=y-1.96*sqrt(variance),
+#          upper=y+1.96*sqrt(variance))
+# obs_df_ori<-obs_df %>%
+#   left_join(df_upper_lower[[1]], by="site")%>%
+#   mutate(y=(y+0.5)*range+lower.y,
+#          upper=(upper.x+0.5)*range+lower.y,
+#          lower=(lower.x+0.5)*range+lower.y) #%>%
+# 
+# # p<-ggplot()+
+# #   geom_line(data=obs_df_ori, aes(x=date, y=y), alpha=0.5)+
+# #   geom_ribbon(data=obs_df_ori, aes(x=date, ymin=lower, ymax=upper),fill="blue", alpha=0.5)+
+# #   ylab("GCC")+
+# #   facet_wrap(~site, ncol = 3)+
+# #   theme_classic()
+# # p
 
 ###
 forecast_df<-left_join(forecast_df,var_forecast_df, by=c("site", "date")) %>% 
@@ -146,4 +142,5 @@ forecast_df_ori<-forecast_df %>%
   left_join(df_upper_lower[[1]], by="site",suffix = c("", ".scale"))%>% 
   mutate(value=(value+0.5)*range+lower.scale,
          upper=(upper+0.5)*range+lower.scale,
-         lower=(lower+0.5)*range+lower.scale)
+         lower=(lower+0.5)*range+lower.scale) %>% 
+  mutate(var=focal_var)

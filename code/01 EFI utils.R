@@ -1,9 +1,13 @@
+library(httr)
+library(jsonlite)
+library(downloader)
 library(tidyverse)
 library(phenocamapi)
 library(LaplacesDemon)
 library(doSNOW)
 library(EML)
 library(lubridate)
+library(gridExtra)
 
 compare_stats<-function ( obs_ori, pred_ori,obs=NULL,pred=NULL) {
   corr<-cor(obs_ori, pred_ori)

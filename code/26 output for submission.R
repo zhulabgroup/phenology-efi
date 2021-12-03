@@ -1,25 +1,21 @@
 
 
 ######
+forecast_df_ori<-forecast_df_ori %>% 
+  mutate(sd=sqrt(variance)) %>% 
+  left_join(as.data.frame(site_list) %>% mutate(site=1:8) %>% rename(siteID=site_list), by="site") 
 
 df_submit<-forecast_df_ori %>% 
-  mutate(sd=sqrt(variance)) %>% 
-  dplyr::select(site, time=date, gcc_90=value, gcc_sd=sd) %>% 
-  left_join(as.data.frame(site_list) %>% mutate(site=1:8) %>% rename(siteID=site_list), by="site") %>% 
-  dplyr::select(time, siteID,
-                mean=gcc_90,
-                sd=gcc_sd) %>% 
-  gather(key="statistic",value="gcc_90",-siteID,-time) %>% 
+  dplyr::select(time=date,
+                siteID,
+                mean=value,
+                sd, var) %>% 
+  gather(key="statistic",value="value",-siteID,-time, -var) %>% 
+  mutate(var=paste0(var, "_90")) %>% 
+  spread(key="var", value="value") %>% 
   mutate(obs_flag=2,
          forecast=1,
          data_assimilation=1) %>% 
-  dplyr::select(time,
-                siteID,
-                obs_flag,
-                forecast,
-                data_assimilation,
-                statistic,
-                gcc_90) %>% 
   arrange(time,siteID)
 df_submit
 
@@ -31,44 +27,62 @@ write_csv(df_submit, paste0(path,"phenology-",year,"-",month,"-",day,"-UCSC_P_ED
 
 
 ########
-site_view<-forecast_df_ori %>%
-  group_by(site) %>%
-  dplyr::summarize(view=sum(!is.na(value))) %>%
-  filter(view!=0) %>%
-  dplyr::select(site) %>%
-  unlist()
-# site_view<-which(rowSums(!is.na(Y_forecast_all[[1]]))!=0)
-site_label<-unique(ts_all$siteID) %>% unlist()
-names(site_label)<-1:length(site_label)
-p<-ggplot()+
-  geom_line(data=obs_df_ori  %>% filter(site%in%site_view), aes(x=date, y=y))+
-  geom_ribbon(data=obs_df_ori%>% filter(site%in%site_view), aes(x=date, ymax=upper, ymin=lower), alpha=0.25)+
-  geom_line(data=forecast_df_ori %>% filter(site%in%site_view), aes(x=date, y=value), col="blue")+
-  geom_ribbon(data=forecast_df_ori%>% filter(site%in%site_view), aes(x=date, ymax=upper, ymin=lower), fill="blue", alpha=0.25)+
+obs_df_ori<-ts_all %>% 
+  gather(key="var_stat", value="value", -siteID, -time) %>%
+  rowwise() %>% 
+  mutate(var=str_split(var_stat, "_")[[1]][1],
+         stat=str_split(var_stat, "_")[[1]][2]) %>% 
+  dplyr::select(-var_stat) %>% 
+  mutate(stat=case_when(stat=="90"~"mean",
+                        TRUE~"sd")) %>%
+  spread(key="stat", value="value") %>% 
+  mutate(variance=sd^2) %>% 
+  mutate(lower=mean-1.96*sqrt(variance),
+         upper=mean+1.96*sqrt(variance)) %>% 
+  rename(date="time")
+  
+p1<-ggplot()+
+  geom_line(data=obs_df_ori %>% filter(var=="gcc"), aes(x=date, y=mean), col="darkgreen")+
+  geom_ribbon(data=obs_df_ori %>% filter(var=="gcc"), aes(x=date, ymax=upper, ymin=lower), fill="darkgreen", alpha=0.25)+
+  geom_line(data=forecast_df_ori %>% filter(var=="gcc") , aes(x=date, y=value), col="blue")+
+  geom_ribbon(data=forecast_df_ori %>% filter(var=="gcc"), aes(x=date, ymax=upper, ymin=lower), fill="blue", alpha=0.25)+
   geom_vline(xintercept = date_list[forecast_start+1], col="blue", alpha=0.5)+
   geom_vline(xintercept = date_list[forecast_start+1]-years(1:4), col="blue", alpha=0.5)+
   ylab("GCC_90")+
-  ylim(min(obs_df_ori$lower,forecast_df_ori$lower ,na.rm = T),
-       max(obs_df_ori$upper,forecast_df_ori$upper ,na.rm = T))+
-  facet_wrap(~site, ncol = 2,labeller = labeller(site=site_label))+
+  facet_wrap(.~siteID, ncol = 2)+
   theme_classic()
 
-cairo_pdf(paste0(path,"phenology-",year,"-",month,"-",day,"-UCSC_P_EDM.pdf"), width = 16, height = 8)
-print(p)
+p2<-ggplot()+
+  geom_line(data=obs_df_ori %>% filter(var=="rcc"), aes(x=date, y=mean), col="orange")+
+  geom_ribbon(data=obs_df_ori %>% filter(var=="rcc"), aes(x=date, ymax=upper, ymin=lower), fill="orange", alpha=0.25)+
+  geom_line(data=forecast_df_ori %>% filter(var=="rcc") , aes(x=date, y=value), col="blue")+
+  geom_ribbon(data=forecast_df_ori %>% filter(var=="rcc"), aes(x=date, ymax=upper, ymin=lower), fill="blue", alpha=0.25)+
+  geom_vline(xintercept = date_list[forecast_start+1], col="blue", alpha=0.5)+
+  geom_vline(xintercept = date_list[forecast_start+1]-years(1:4), col="blue", alpha=0.5)+
+  ylab("RCC_90")+
+  facet_wrap(.~siteID, ncol = 2)+
+  theme_classic()
+
+cairo_pdf(paste0(path,"phenology-",year,"-",month,"-",day,"-UCSC_P_EDM.pdf"), width = 16, height = 16)
+print(grid.arrange(p1, p2, ncol=1))
 dev.off()
 
-p<-ggplot()+
-  geom_line(data=obs_df_ori  %>% filter(site%in%site_view) %>% filter(date>=date_list[forecast_start+1]), aes(x=date, y=y))+
-  geom_ribbon(data=obs_df_ori%>% filter(site%in%site_view) %>% filter(date>=date_list[forecast_start+1]), aes(x=date, ymax=upper, ymin=lower), alpha=0.25)+
-  geom_line(data=forecast_df_ori %>% filter(site%in%site_view) %>% filter(date>=date_list[forecast_start+1]), aes(x=date, y=value), col="blue")+
-  geom_ribbon(data=forecast_df_ori%>% filter(site%in%site_view) %>% filter(date>=date_list[forecast_start+1]), aes(x=date, ymax=upper, ymin=lower), fill="blue", alpha=0.25)+
+p1<-ggplot()+
+  geom_line(data=forecast_df_ori %>% filter(var=="gcc")%>% filter(date>=date_list[forecast_start+1]) , aes(x=date, y=value), col="darkgreen")+
+  geom_ribbon(data=forecast_df_ori %>% filter(var=="gcc")%>% filter(date>=date_list[forecast_start+1]), aes(x=date, ymax=upper, ymin=lower), fill="darkgreen", alpha=0.25)+
   ylab("GCC_90")+
-  # ylim(-0.1,1.1)+
-  facet_wrap(~site, ncol = 2,labeller = labeller(site=site_label))+
+  facet_wrap(.~siteID, ncol = 2)+
   theme_classic()
 
-cairo_pdf(paste0(path,"phenology-",year,"-",month,"-",day,"-UCSC_P_EDM_fore_only.pdf"), width = 16, height = 8)
-print(p)
+p2<-ggplot()+
+  geom_line(data=forecast_df_ori %>% filter(var=="rcc")%>% filter(date>=date_list[forecast_start+1]) , aes(x=date, y=value), col="orange")+
+  geom_ribbon(data=forecast_df_ori %>% filter(var=="rcc")%>% filter(date>=date_list[forecast_start+1]), aes(x=date, ymax=upper, ymin=lower), fill="orange", alpha=0.25)+
+  ylab("GCC_90")+
+  facet_wrap(.~siteID, ncol = 2)+
+  theme_classic()
+
+cairo_pdf(paste0(path,"phenology-",year,"-",month,"-",day,"-UCSC_P_EDM_fore_only.pdf"), width = 16, height = 16)
+print(grid.arrange(p1, p2, ncol=1))
 dev.off()
 ########
 
@@ -82,7 +96,8 @@ attributes <- tibble::tribble(
   "forecast",          "[flag]{whether time step assimilated data}", "dimensionless",         NA,           "integer",    NA,
   "data_assimilation", "[flag]{whether time step assimilated data}", "dimensionless",         NA,           "integer",    NA,
   "statistic",     "[dimension]{descriptive statistic}",        "dimensionless",         NA,           "character",    NA,
-  "gcc_90",         "[variable]{Green Chromatic Coordinate}",      "dimensionless", NA,           "real",       NA
+  "gcc_90",         "[variable]{Green Chromatic Coordinate}",      "dimensionless", NA,           "real",       NA,
+  "rcc_90",         "[variable]{Red Chromatic Coordinate}",      "dimensionless", NA,           "real",       NA
 ) 
 factors1<-data.frame(attributeName="siteID",
                      code=site_list,
@@ -97,7 +112,7 @@ factors
 attrList <- set_attributes(attributes, 
                            factors,
                            col_classes = c("Date", "factor", "numeric","numeric", 
-                                           "numeric","factor","numeric"))
+                                           "numeric","factor","numeric", "numeric"))
 
 ## sets metadata about the file itself (name, file type, size, MD5, etc)
 physical <- set_physical(paste0(path,"phenology-",year,"-",month,"-",day,"-UCSC_P_EDM.csv"),

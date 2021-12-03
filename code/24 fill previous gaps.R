@@ -17,7 +17,7 @@
 
 today_id<-which (date_list==today)
 for(site in 1:nrow(coord_df)) {
-  path_results<-paste0(path, "results/", site)
+  path_results<-paste0(path, focal_var,"/results/", site)
   X_basis<-as.matrix(read_csv(paste0(path_results,"/X_basis.csv")))
   Y_basis<-as.matrix(read_csv(paste0(path_results,"/Y_basis.csv")))
   P_basis<-as.matrix(read_csv(paste0(path_results,"/P_basis.csv")))

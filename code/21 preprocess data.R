@@ -6,10 +6,10 @@ x<-array(NA, dim= c(nrow(coord_df),length(date_list),length(var_list)),
                          var_list))
 for (j in 1:length(date_list)) { #time
   for (v in 1:length(var_list)) { #covariate
-    if (var_list[v] %in% c("gcc")) {
-      gcc_date<-ts_all %>% filter(time==date_list[j])
-      if (nrow(gcc_date)>0) {
-        x[,j,v]<-gcc_date$gcc_90
+    if (var_list[v] %in% c("gcc", "rcc")) {
+      pheno_date<-ts_all %>% filter(time==date_list[j])
+      if (nrow(pheno_date)>0) {
+        x[,j,v]<-pheno_date[paste0(focal_var, "_90")] %>% unlist()
       } else {
         x[,j,v]<-rep(NA, nrow(coord_df))
       }
@@ -33,22 +33,16 @@ for (j in 1:length(date_list)) { #time
   print(date_list[j])
 }
 
-# export_path<-paste0(path, "raw")
-# dir.create(export_path, recursive = T)
-# for (i in 1:nrow(coord_df)) {
-#   write_csv(as.data.frame(x[i,,]), paste0(export_path, "/", i, ".csv"))
-# }
-
 Sigma<-array(NA, dim= c(nrow(coord_df),length(date_list),length(var_list)),
              dimnames = list(as.character(1:nrow(coord_df)),
                              as.character(date_list),
                              var_list))
 for (j in 1:length(date_list)) { #time
   for (v in 1:length(var_list)) { #covariate
-    if (var_list[v] %in% c("gcc")) {
-      gcc_date<-ts_all %>% filter(time==date_list[j])
-      if (nrow(gcc_date)>0) {
-        Sigma[,j,v]<-(gcc_date$gcc_sd)^2
+    if (var_list[v] %in% c("gcc", "rcc")) {
+      pheno_date<-ts_all %>% filter(time==date_list[j])
+      if (nrow(pheno_date)>0) {
+        Sigma[,j,v]<-(pheno_date[paste0(focal_var, "_sd")] %>% unlist())^2
       } else {
         Sigma[,j,v]<-rep(NA, nrow(coord_df))
       }
@@ -60,11 +54,10 @@ for (j in 1:length(date_list)) { #time
   print(date_list[j])
 }
 
-
 for (i in 1:nrow(coord_df)) {
   for (j in 1:length(date_list)) { 
     if(!is.na(Sigma[i,j,1])) {
-      if (Sigma[i,j,1]>0.0001) {
+      if (Sigma[i,j,1]>sd_thres) {
         Sigma[i,j,1]<-NA
         x[i,j,1]<-NA
       }
@@ -81,7 +74,7 @@ for (i in 1:nrow(coord_df)) {
 date_id<-1:length(seq(min(ts_all$time),max(ts_all$time), by = 1))  #using percentile in NEON data
 df_upper_lower<-vector(mode="list")
 for(j in 1:length(var_list)) {
-  if (var_list[j]%in% c("gcc")) {
+  if (var_list[j]%in% c("gcc", "rcc")) {
     df_upper_lower[[j]]<-data.frame(x[,,j, drop=F]) %>% 
       mutate(site=row_number()) %>% 
       gather(key="date", value = "value",-site) %>% 
@@ -162,9 +155,8 @@ for(j in 1:length(var_list)) {
     }
   }
 }
-# 
-# export_path<-paste0(path,"processed")
-path_scale<-paste0(path, "scaling/")
+ 
+path_scale<-paste0(path, focal_var, "/scaling")
 dir.create(path_scale, recursive = T)
 for (j in 1:length(var_list)) {
   write_csv(df_upper_lower[[j]], paste0(path_scale, "/", j, ".csv"))

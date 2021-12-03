@@ -1,11 +1,5 @@
 # https://www.neonscience.org/resources/learning-hub/tutorials/neon-api-usage
 
-# Load the necessary libraries
-library(httr)
-library(jsonlite)
-library(dplyr, quietly=T)
-library(downloader)
-
 if (update) {
   ###temp
   # what did we have last time?

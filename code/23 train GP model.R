@@ -1,6 +1,6 @@
 for(site in 1:nrow(coord_df)) {
-  path_train<-paste0(path,"train/",site)
-  path_results<-paste0(path, "results/", site)
+  path_train<-paste0(path, focal_var,"/train/",site)
+  path_results<-paste0(path,focal_var, "/results/", site)
   dir.create(path_results, recursive = T)
   
   ########################
