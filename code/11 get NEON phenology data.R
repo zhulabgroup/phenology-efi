@@ -88,7 +88,8 @@ if(update) {
       mutate(siteID=site_list[i])
   }
   coord_df<-rbindlist(coord_list) %>% 
-    dplyr::select(-site)
+    dplyr::select(-site) %>% 
+    mutate(id=row_number())
   # ggplot(as.data.frame(coord_df))+
   #   geom_point(aes(x=lon, y=lat), alpha=1)+
   #   theme_minimal()

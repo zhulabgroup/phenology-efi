@@ -82,7 +82,7 @@ date_id<-1:length(seq(min(ts_all$time),max(ts_all$time), by = 1))  #using percen
 df_upper_lower<-vector(mode="list")
 for(j in 1:length(var_list)) {
   if (var_list[j]%in% c("gcc")) {
-    df_upper_lower[[j]]<-data.frame(x[,,j]) %>% 
+    df_upper_lower[[j]]<-data.frame(x[,,j, drop=F]) %>% 
       mutate(site=row_number()) %>% 
       gather(key="date", value = "value",-site) %>% 
       drop_na() %>% 
@@ -91,14 +91,14 @@ for(j in 1:length(var_list)) {
                        upper=quantile(value, 0.975)) %>% 
       mutate(range=upper-lower)
   } else { #scale for all sites
-    all_upper_lower<-data.frame(x[,,j]) %>% 
+    all_upper_lower<-data.frame(x[,,j, drop=F]) %>% 
       mutate(site=row_number()) %>% 
       gather(key="date", value = "value",-site) %>% 
       drop_na() %>% 
       dplyr::summarize(lower=quantile(value, 0.025),
                        upper=quantile(value, 0.975)) %>% 
       mutate(range=upper-lower)
-    df_upper_lower[[j]]<-data.frame(x[,,j]) %>% 
+    df_upper_lower[[j]]<-data.frame(x[,,j, drop=F]) %>% 
       mutate(site=row_number()) %>% 
       gather(key="date", value = "value",-site) %>% 
       drop_na() %>% 
@@ -108,8 +108,8 @@ for(j in 1:length(var_list)) {
              range=all_upper_lower$range)
   }
   
-  lower<-matrix(df_upper_lower[[j]]$lower)%*%matrix(1, nrow=1, ncol=ncol(x[,,j]) )
-  range<-matrix(df_upper_lower[[j]]$range)%*%matrix(1, nrow=1, ncol=ncol(x[,,j]) )
+  lower<-matrix(df_upper_lower[[j]]$lower)%*%matrix(1, nrow=1, ncol=ncol(x[,,j, drop=F]) )
+  range<-matrix(df_upper_lower[[j]]$range)%*%matrix(1, nrow=1, ncol=ncol(x[,,j, drop=F]) )
   
   x[,,j]<-(x[,,j]-lower)/range-0.5
 }
@@ -164,69 +164,41 @@ for(j in 1:length(var_list)) {
 }
 # 
 # export_path<-paste0(path,"processed")
-dir.create(paste0(path, "scaling/"))
+path_scale<-paste0(path, "scaling/")
+dir.create(path_scale, recursive = T)
 for (j in 1:length(var_list)) {
-  write_csv(df_upper_lower[[j]], paste0(path, "scaling/", j, ".csv"))
+  write_csv(df_upper_lower[[j]], paste0(path_scale, "/", j, ".csv"))
   print(j)
 }
-# for (i in 1:nrow(coord_df)) {
-#   write_csv(as.data.frame(x[i,,]), paste0(export_path, "/", i, ".csv"))
-#   print(i)
+
+# #### visualize time series
+# df_list<-vector(mode="list", length(var_list))
+# for (i in 1:length(var_list)) {
+#   df_list[[i]]<-as.data.frame(x[,,i]) %>% 
+#     mutate(site=1:nrow(coord_df)) %>% 
+#     gather(key = "date", value="value", -site) %>% 
+#     mutate(var=var_list[i]) %>% 
+#     mutate(date=as.Date(date))
 # }
-
-####
-
-
-
-# # whittaker smoothing
-# for(j in 1:length(var_list)) {
-#   for (i in 1:nrow(coord_df)) {
-#     max_id<-0
-#     done<-F
-#     while(!done) {
-#       min_id<-min(which(!is.na(Sigma[i,(max_id+1):length(date_list),j])))+(max_id)
-#       if (min_id==Inf) {
-#         done<-T
-#       } else {
-#         max_id<-min(which(is.na(Sigma[i,min_id:length(date_list),j])))-1+(min_id-1)
-#         if (max_id==Inf) {
-#           max_id<-length(date_list)
-#           done<-T
-#         }
-#         Sigma[i,min_id:max_id,j]<-ptw::whit1(Sigma[i,min_id:max_id,j],5) #gcc
-#       }
-#     }
-#   }
+# df<-bind_rows(df_list)
+# 
+# var_df_list<-vector(mode="list", length(var_list))
+# for (i in 1:length(var_list)) {
+#   var_df_list[[i]]<-as.data.frame(Sigma[,,i]) %>% 
+#     mutate(site=1:nrow(coord_df)) %>% 
+#     gather(key = "date", value="value", -site) %>% 
+#     mutate(var=var_list[i]) %>% 
+#     mutate(date=as.Date(date))
 # }
-
-#### visualize time series
-df_list<-vector(mode="list", length(var_list))
-for (i in 1:length(var_list)) {
-  df_list[[i]]<-as.data.frame(x[,,i]) %>% 
-    mutate(site=1:nrow(coord_df)) %>% 
-    gather(key = "date", value="value", -site) %>% 
-    mutate(var=var_list[i]) %>% 
-    mutate(date=as.Date(date))
-}
-df<-bind_rows(df_list)
-
-var_df_list<-vector(mode="list", length(var_list))
-for (i in 1:length(var_list)) {
-  var_df_list[[i]]<-as.data.frame(Sigma[,,i]) %>% 
-    mutate(site=1:nrow(coord_df)) %>% 
-    gather(key = "date", value="value", -site) %>% 
-    mutate(var=var_list[i]) %>% 
-    mutate(date=as.Date(date))
-}
-var_df<-bind_rows(var_df_list)
-
-df<-left_join(df,var_df, by=c("site", "date", "var")) %>% 
-  dplyr::rename(value=value.x, variance=value.y) %>% 
-  mutate(lower=value-1.96*sqrt(variance),
-         upper=value+1.96*sqrt(variance))
-
-ggplot(df %>% filter(var=="gcc") )+
-  geom_line(aes(x=date, y=value))+
-  geom_ribbon(aes(x=date, ymin=lower, ymax=upper), fill="blue", alpha=0.5)+
-  theme_classic()+
-  facet_wrap(~site*var)
+# var_df<-bind_rows(var_df_list)
+# 
+# df<-left_join(df,var_df, by=c("site", "date", "var")) %>% 
+#   dplyr::rename(value=value.x, variance=value.y) %>% 
+#   mutate(lower=value-1.96*sqrt(variance),
+#          upper=value+1.96*sqrt(variance))
+# 
+# ggplot(df %>% filter(var=="gcc") )+
+#   geom_line(aes(x=date, y=value))+
+#   geom_ribbon(aes(x=date, ymin=lower, ymax=upper), fill="blue", alpha=0.5)+
+#   theme_classic()+
+#   facet_wrap(~site*var)

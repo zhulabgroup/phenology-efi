@@ -113,4 +113,6 @@ num_part <- 20
 
 num_epoch <- 1 #20
 
-basisnumber <-500 
+basisnumber <-100 
+
+maxcount<-100

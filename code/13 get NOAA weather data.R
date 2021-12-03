@@ -117,3 +117,4 @@ weather_df<-read_csv(paste0(path, "weather.csv")) %>%
     !is.na(NEON) ~ NEON
   )) %>% 
   dplyr::select(-NEON, -NOAA)
+

@@ -1,4 +1,4 @@
-today_list<-seq(as.Date("2021-10-13"),as.Date("2021-10-13"),by=1)
+today_list<-seq(as.Date("2021-02-02"),as.Date("2021-12-01"),by=1)
 for (d in 1:length(today_list)) {
   todaydone<-F
   while (!todaydone) {
@@ -6,7 +6,7 @@ for (d in 1:length(today_list)) {
       today<-today_list[d]
       
       forecast_project_id<-"UCSC_P_EDM" 
-      forecast_model_id   <- "v1.6"
+      forecast_model_id   <- "v1.7"
       forecast_iteration_id<- uuid::UUIDgenerate() 
       
       source("code/01 EFI utils.R")
@@ -24,6 +24,7 @@ for (d in 1:length(today_list)) {
       source("code/23 train GP model.R")
       source("code/24 fill previous gaps.R")
       source("code/25 forecast.R")
+      
       source("code/26 output for submission.R")
       
       closeAllConnections()
