@@ -22,15 +22,13 @@ for (i in 1:length(vars)) {
 lags <- vector(mode = "list", length(vars))
 for (i in 1:length(vars)) {
   if (var_list[vars[i]]  %in% c("doy", "gccmean")) {
-    lags[[i]] <- 1:1
-  } # for doy
-  if (var_list[vars[i]]  %in% c("gcc", "rcc")) {
+    lags[[i]] <- list(0)
+  } else if (var_list[vars[i]]  %in% c("gcc", "rcc")) {
     lags[[i]] <- list(1)#list(1,2,3,4,5)
     for (period in 1:8) {
       lags[[i]] <-rlist::list.append(lags[[i]] ,(period-1)*16+1:16)
     }
-  }
-  else {
+  } else {
     lags[[i]] <- list()#list(1,2,3,4,5)
     for (period in 1:8) {
       lags[[i]] <-rlist::list.append(lags[[i]] ,(period-1)*8+1:8)

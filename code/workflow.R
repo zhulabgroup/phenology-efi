@@ -1,4 +1,4 @@
-today_list<-seq(as.Date("2021-02-02"),as.Date("2021-12-01"),by=1)
+today_list<-seq(as.Date("2021-06-15"),as.Date("2021-12-07"),by=1)
 for (d in 1:length(today_list)) {
   todaydone<-F
   while (!todaydone) {
@@ -31,7 +31,6 @@ for (d in 1:length(today_list)) {
       source("code/23 train GP model.R")
       source("code/24 fill previous gaps.R")
       source("code/25 forecast.R")
-      obs_df_ori_allvar[[1]]<-obs_df_ori
       forecast_df_ori_allvar[[1]]<-forecast_df_ori
       
       focal_var<-"rcc"
@@ -41,7 +40,6 @@ for (d in 1:length(today_list)) {
       source("code/23 train GP model.R")
       source("code/24 fill previous gaps.R")
       source("code/25 forecast.R")
-      obs_df_ori_allvar[[2]]<-obs_df_ori
       forecast_df_ori_allvar[[2]]<-forecast_df_ori
       
       forecast_df_ori<-bind_rows(forecast_df_ori_allvar)

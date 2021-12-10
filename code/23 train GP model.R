@@ -362,8 +362,9 @@ for(site in 1:nrow(coord_df)) {
     arrange(variable, neighbor, lag) 
   
   cairo_pdf(paste0(path_results,"/phi_grid.pdf"))
-  p<-ggplot(phi_weighted_mean) +
-    geom_raster(aes(x = lag, y = variable, fill = log(phi))) +
+  p<-ggplot() +
+    geom_raster(data=phi_weighted_mean %>% filter(phi>0),aes(x = lag, y = variable, fill = log(phi))) +
+    geom_raster(data=phi_weighted_mean %>% filter(phi==0),aes(x = lag, y = variable), fill="black") +
     coord_equal()+
     theme_light(base_size = 15)+
     theme(panel.grid = element_blank(),
