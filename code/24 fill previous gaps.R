@@ -23,7 +23,7 @@ for(site in 1:nrow(coord_df)) {
   P_basis<-as.matrix(read_csv(paste0(path_results,"/P_basis.csv")))
   D_basis<-as.matrix(read_csv(paste0(path_results,"/D_basis.csv")))
   pars <- as.matrix(read_csv(paste0(path_results,"/pars.csv")))
-  log_p <- as.matrix(read_csv(paste0(path_results,"/log_p_train.csv")))
+  log_p <- as.matrix(read_csv(paste0(path_results,"/log_p_valid.csv")))
   
   all_filled=F
   start_search<-max(unlist(lags))+1

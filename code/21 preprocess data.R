@@ -1,11 +1,44 @@
 date_list <- seq(min(ts_all$time),max(weather_df$date), by = 1)
 
+hist_mean<-ts_all %>% 
+  dplyr::select(siteID, time, value=paste0(focal_var, "_90")) %>% 
+  mutate(doy=as.integer(format(time, "%j"))) %>% 
+  group_by(siteID, doy) %>% 
+  summarize(climatology_mean=mean(value, na.rm=T),
+            climatology_sd=sd(value, na.rm = T)) %>% 
+  ungroup()
+
+climatology<-ts_all %>% 
+  dplyr::select(siteID, time) %>% 
+  full_join(expand_grid(siteID=unique(ts_all$siteID), time=date_list),
+            by=c("siteID", "time")) %>% 
+  mutate(doy=as.integer(format(time, "%j"))) %>% 
+  left_join(hist_mean,
+            by=c("siteID", "doy")) %>% 
+  dplyr::select(-doy)
+
 x<-array(NA, dim= c(nrow(coord_df),length(date_list),length(var_list)),
          dimnames = list(as.character(1:nrow(coord_df)),
                          as.character(date_list),
                          var_list))
 for (j in 1:length(date_list)) { #time
   for (v in 1:length(var_list)) { #covariate
+    if (var_list[v] %in% c("gcc", "rcc")) {
+      pheno_date<-ts_all %>% filter(time==date_list[j])
+      if (nrow(pheno_date)>0) {
+        x[,j,v]<-pheno_date[paste0(focal_var, "_90")] %>% unlist()
+      } else {
+        x[,j,v]<-rep(NA, nrow(coord_df))
+      }
+    }
+    if (var_list[v] %in% c("climatology")) {
+      pheno_date<-climatology %>% filter(time==date_list[j])
+      if (nrow(pheno_date)>0) {
+        x[,j,v]<-pheno_date["climatology_mean"] %>% unlist()
+      } else {
+        x[,j,v]<-rep(NA, nrow(coord_df))
+      }
+    }
     if (var_list[v] %in% c("gcc", "rcc")) {
       pheno_date<-ts_all %>% filter(time==date_list[j])
       if (nrow(pheno_date)>0) {
@@ -46,8 +79,14 @@ for (j in 1:length(date_list)) { #time
       } else {
         Sigma[,j,v]<-rep(NA, nrow(coord_df))
       }
-    }
-    else {
+    } else if (var_list[v] %in% c("climatology")) {
+      pheno_date<-climatology %>% filter(time==date_list[j])
+      if (nrow(pheno_date)>0) {
+        Sigma[,j,v]<-(pheno_date["climatology_sd"] %>% unlist())^2
+      } else {
+        Sigma[,j,v]<-rep(NA, nrow(coord_df))
+      }
+    } else {
       Sigma[,j,v]<-rep(0, nrow(coord_df))
     }
   }
@@ -74,7 +113,7 @@ for (i in 1:nrow(coord_df)) {
 date_id<-1:length(seq(min(ts_all$time),max(ts_all$time), by = 1))  #using percentile in NEON data
 df_upper_lower<-vector(mode="list")
 for(j in 1:length(var_list)) {
-  if (var_list[j]%in% c("gcc", "rcc")) {
+  if (var_list[j]%in% c("gcc", "rcc", "climatology")) {
     df_upper_lower[[j]]<-data.frame(x[,,j, drop=F]) %>% 
       mutate(site=row_number()) %>% 
       gather(key="date", value = "value",-site) %>% 

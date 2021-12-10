@@ -1,4 +1,4 @@
-today_list<-seq(as.Date("2021-06-15"),as.Date("2021-12-07"),by=1)
+today_list<-seq(as.Date("2021-07-07"),as.Date("2021-12-10"),by=1)
 for (d in 1:length(today_list)) {
   todaydone<-F
   while (!todaydone) {

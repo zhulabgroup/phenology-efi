@@ -2,6 +2,7 @@ epoch=1
 
 # neighbors and lags
 var_list <- c(focal_var
+              , "climatology"
               , "tmean"
               , "prcp"
               )
@@ -21,9 +22,9 @@ for (i in 1:length(vars)) {
 
 lags <- vector(mode = "list", length(vars))
 for (i in 1:length(vars)) {
-  if (var_list[vars[i]]  %in% c("doy", "gccmean")) {
+  if (var_list[vars[i]]  %in% c("doy", "climatology")) {
     lags[[i]] <- list(0)
-  } else if (var_list[vars[i]]  %in% c("gcc", "rcc")) {
+  }  else if (var_list[vars[i]]  %in% c("gcc", "rcc")) {
     lags[[i]] <- list(1)#list(1,2,3,4,5)
     for (period in 1:8) {
       lags[[i]] <-rlist::list.append(lags[[i]] ,(period-1)*16+1:16)
@@ -101,7 +102,7 @@ priors <- list(
   V_rho = 0.1
 )
 
-num_part <- 20
+num_part <- 5
 
 num_epoch <- 1 #20
 

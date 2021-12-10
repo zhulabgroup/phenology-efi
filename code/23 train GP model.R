@@ -19,8 +19,8 @@ for(site in 1:nrow(coord_df)) {
     D_all<-D_all[-missing_id,,drop=F]
   }
   
-  train_id <- sample(1:nrow(X_all), round(nrow(X_all) * 10 / 10))
-  # valid_id <- setdiff(1:nrow(X_all), train_id)
+  train_id <- sample(1:nrow(X_all), round(nrow(X_all) * 8 / 10))
+  valid_id <- setdiff(1:nrow(X_all), train_id)
   
   X_train <- X_all[train_id, , drop = F]
   Y_train <- Y_all[train_id, , drop = F]
@@ -34,10 +34,10 @@ for(site in 1:nrow(coord_df)) {
   P_train <- P_train[window_id, , drop = F]
   D_train <- D_train[window_id, , drop = F]
   
-  # X_valid <- X_all[valid_id, , drop = F]
-  # Y_valid <- Y_all[valid_id, , drop = F]
-  # P_valid <- P_all[valid_id, , drop = F]
-  # D_valid <- D_all[valid_id, , drop = F]
+  X_valid <- X_all[valid_id, , drop = F]
+  Y_valid <- Y_all[valid_id, , drop = F]
+  P_valid <- P_all[valid_id, , drop = F]
+  D_valid <- D_all[valid_id, , drop = F]
   
   basisnumber<-min(basisnumber, nrow(X_all))
   if (basisnumber==nrow(X_all)) {
@@ -284,42 +284,42 @@ for(site in 1:nrow(coord_df)) {
   #   valid_id_subset[[n]]<-sample(1:nrow(X_valid),100)
   # }
   
-  # log_p_valid_new <-
-  #   foreach(
-  #     i = 1:ncol(pars_new),
-  #     # .export = ls(globalenv()),
-  #     .export = c(
-  #       "phimax", "phimin", "vemax", "vemin", "taumax", "taumin", "gammamax", "gammamin",
-  #       "pars_new", "distMat", "priors",
-  #       "X_valid", "P_valid", "Y_valid",
-  #       "X_basis", "P_basis", "Y_basis",
-  #       "GPSDM", "fmingrad_Rprop"
-  #     ),
-  #     .combine = cbind
-  #   ) %dopar% {
-  #     blas_set_num_threads(1)
-  #     omp_set_num_threads(1)
-  #     
-  #     
-  #     num_sample <- 50
-  #     loglik_res <- rep(NA, num_sample)
-  #     
-  #     for (k in 1:num_sample) {
-  #       minibatch <- sample(1:nrow(X_valid), min(nrow(X_valid),100))
-  #       res <- GPSDM(pars = pars_new[, i, drop = F], distMat = distMat, basisX = X_basis, basisP = P_basis, basisY = Y_basis, newX = X_valid[minibatch, , drop = F], newP = P_valid[minibatch, , drop = F], newY = Y_valid[minibatch, , drop = F],priors=priors, mode = c("optimize"))
-  #       loglik_res[k] <- -res$neglpost
-  #       print(k)
-  #     }
-  #     
-  #     median(loglik_res)
-  #   }
+  log_p_valid_new <-
+    foreach(
+      i = 1:ncol(pars_new),
+      # .export = ls(globalenv()),
+      .export = c(
+        "phimax", "phimin", "vemax", "vemin", "taumax", "taumin", "gammamax", "gammamin",
+        "pars_new", "distMat", "priors",
+        "X_valid", "P_valid", "Y_valid",
+        "X_basis", "P_basis", "Y_basis",
+        "GPSDM", "fmingrad_Rprop"
+      ),
+      .combine = cbind
+    ) %dopar% {
+      blas_set_num_threads(1)
+      omp_set_num_threads(1)
+
+
+      num_sample <- 50
+      loglik_res <- rep(NA, num_sample)
+
+      for (k in 1:num_sample) {
+        minibatch <- sample(1:nrow(X_valid), min(nrow(X_valid),100))
+        res <- GPSDM(pars = pars_new[, i, drop = F], distMat = distMat, basisX = X_basis, basisP = P_basis, basisY = Y_basis, newX = X_valid[minibatch, , drop = F], newP = P_valid[minibatch, , drop = F], newY = Y_valid[minibatch, , drop = F],priors=priors, mode = c("optimize"))
+        loglik_res[k] <- -res$neglpost
+        print(k)
+      }
+
+      median(loglik_res)
+    }
   
-  sort_id <- rev(order(log_p_new))[1:num_part]
+  sort_id <- rev(order(log_p_valid_new))[1:num_part]
   pars <- pars_new[, sort_id, drop = F]
   pars_var <- pars_var_new[sort_id]
   log_p <- log_p_new[sort_id]
   pars_id <- pars_id_new[sort_id]
-  # log_p_valid <- log_p_valid_new[sort_id]
+  log_p_valid <- log_p_valid_new[sort_id]
   colnames(pars) <- pars_id
   
   write_csv(as.data.frame(pars), paste0(path_results,"/pars", ".csv"))
@@ -327,14 +327,14 @@ for(site in 1:nrow(coord_df)) {
     write_csv(as.data.frame(pars_var[[i]]), paste0(path_results,"/pars_var_", i, ".csv"))
   }
   write_csv(as.data.frame(log_p), paste0(path_results,"/log_p_train", ".csv"))
-  # write_csv(as.data.frame(log_p_valid), paste0(path_results,"/log_p_valid", ".csv"))
+  write_csv(as.data.frame(log_p_valid), paste0(path_results,"/log_p_valid", ".csv"))
   
   
   
   
   ######## Draw phi grid
   C <- pars[1:ndim, , drop = F]
-  particle_wts <- exp(log_p - mean(log_p))
+  particle_wts <- exp(log_p_valid - mean(log_p_valid))
   
   C_df <- C %>%
     as_tibble() %>%
